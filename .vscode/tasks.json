@@ -1,0 +1,80 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{	//gcc config
+			"type": "cppbuild",
+			"label": "C/C++: gcc.exe arquivo de build ativo",
+			"command": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"-Wall",
+				"-Wextra",
+				"${file}",
+				"-o",
+				"${fileBasenameNoExtension}.exe"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compilador: C:\\msys64\\mingw64\\bin\\gcc.exe"
+		},
+		{	//g++ OOP config
+			"type": "cppbuild",
+			"label": "C/C++: g++.exe arquivo de build ativo (OOP)",
+			"command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"-Wall",
+				"-Wextra",
+				"${file}",
+				"classes/*.cpp",
+				"-I",
+				"headers",
+				"-o",
+				"${fileBasenameNoExtension}.exe"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compilador: C:\\msys64\\mingw64\\bin\\g++.exe"
+		},
+		{	//g++ Procedural config
+			"type": "cppbuild",
+			"label": "C/C++: g++.exe arquivo de build ativo (Procedural)",
+			"command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",	
+				"-Wall",
+				"-Wextra",
+				"${file}",
+				"-o",
+				"${fileBasenameNoExtension}.exe"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"detail": "compilador: C:\\msys64\\mingw64\\bin\\g++.exe"
+		}
+	]
+}
