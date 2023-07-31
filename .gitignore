@@ -1,4 +1,0 @@
-#Ignore executables
-.exe
-workspace/main.exe
-*.exe
