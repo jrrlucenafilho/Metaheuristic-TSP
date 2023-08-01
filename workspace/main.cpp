@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     cout << "DistanceMatrix: " << endl;
     data.printMatrixDist();
 
-    //Implementing Algorithm right here
+    //Heuristic goes here
 
     cout << "Exemplo de Solucao s = ";
     double cost = 0.0;
