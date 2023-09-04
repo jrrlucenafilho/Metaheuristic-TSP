@@ -1,3 +1,5 @@
-#Ignore executables
-workspace/main.exe
+#Ignored filetypes
 *.exe
+
+#Ignored folders
+/resources
