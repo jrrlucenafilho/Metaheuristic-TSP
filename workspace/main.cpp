@@ -16,6 +16,7 @@ int main(int argc, char** argv)
 
     //Heuristic goes here
 
+    cout << "----------------------\n";
     cout << "Exemplo de Solucao s = ";
     double cost = 0.0;
     for (size_t i = 1; i < n; i++) {
