@@ -1,1 +1,0 @@
-O código presente em `algoritmo-hungaro` resolve o TSP sem restrições de *sub-tour* em tempo polinomial, dada uma matriz de pesos.
