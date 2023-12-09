@@ -20,10 +20,12 @@ struct InsertionInfo {
     double cost;
 };
 
+//BuildSolution Utility funcs
 /**
  * @brief Calcs the cost of inserting the new node into the graph. (vertex and node used interchangaebly here)
  * @param tspSol To-be-evaluated TSP Solution
  * @param unaddedVertices Vertices / Nodes that still don't belong to the solution subtour
+ * @param distMatrix Matrix holding distances among graph nodes
  * @return insertionCost Cost of inserting nodes into TSP Solution graph
  */
 vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& unaddedVertices, double** distMatrix)
@@ -50,13 +52,35 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
     return insertionCost;
 }
 
+vector<int> Choose3RandNodes(double** distMatrix)
+{
+    //TODO: What the func says duh. Test it too
+    //Gotta make the next func know which ones haven't been chosen
+}
+
 /**
  * @brief Builds a fair solution (though still far from optimized) Using Greedy Randomized Adaptive Search (Insertion-by-cheapest)
  * @return TspSolution
  */
 TspSolution BuildSolution(double** distMatrix)
 {
-    
+    TspSolution tspSol;
+    tspSol.sequence = Choose3RandNodes(distMatrix);   //gets s
+    //vector<int> unaddedNodes = getUnchosenNodes();   //gets CL
+
+    while(!unaddedNodes.empty()){
+        vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
+
+        insertionCost;
+
+        double alpha = (double)rand() / RAND_MAX;
+
+        int selected = rand() % ((int)ceil(alpha * insertionCost.size()));
+
+        insertIntoSolution(tspSol, insertionCost[selected].insertedNode); //k
+    }
+
+    return tspSol;
 }
 
 TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, double** distMatrix)
