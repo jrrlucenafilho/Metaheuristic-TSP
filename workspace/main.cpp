@@ -56,6 +56,16 @@ vector<int> Choose3RandNodes(double** distMatrix)
 {
     //TODO: What the func says duh. Test it too
     //Gotta make the next func know which ones haven't been chosen
+    //Gotta have size of graph
+
+    vector<int> starterSequence;
+    int randChosenEdge;     //Randomly chooses an edge in 2d array
+    bool randChosenNode;    //true -> chosses up node, false does opposite
+
+    starterSequence.push_back(1);
+
+    //Algo for now is: Choose randomly from (0 to numOfEdges-1)
+    //And then randomly assign true or false for randChosenNode, to +1 or -1 on chosen edge
 }
 
 /**
@@ -77,7 +87,7 @@ TspSolution BuildSolution(double** distMatrix)
 
         int selected = rand() % ((int)ceil(alpha * insertionCost.size()));
 
-        insertIntoSolution(tspSol, insertionCost[selected].insertedNode); //k
+        //insertIntoSolution(tspSol, insertionCost[selected].insertedNode); //k
     }
 
     return tspSol;
