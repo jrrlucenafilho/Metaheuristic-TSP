@@ -52,36 +52,66 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
     return insertionCost;
 }
 
-vector<int> Choose3RandNodes(double** distMatrix)
+vector<int> Choose3RandNodes(int dimension)
 {
-    //TODO: What the func says duh. Test it too
-    //Gotta make the next func know which ones haven't been chosen
-    //Gotta have size of graph
+    vector<int> starterSeq;
+    vector<int> alreadyAddedNodes = {0, 0, 0};
 
-    vector<int> starterSequence;
-    int randChosenEdge;     //Randomly chooses an edge in 2d array
-    bool randChosenNode;    //true -> chosses up node, false does opposite
+    //Pertaining to graph's 2d array
+    int randNode = 0;
+    int addedNodes = 0;
 
-    starterSequence.push_back(1);
+    bool nodeAlreadyAddedFlag = false;
 
-    //Algo for now is: Choose randomly from (0 to numOfEdges-1)
-    //And then randomly assign true or false for randChosenNode, to +1 or -1 on chosen edge
+    starterSeq.reserve(5);  //{1, x, y, z, 1}
+    starterSeq.push_back(1);
+
+    //Choosing ramdonly 'till 3 non-equal nodes are added
+    //Doing this cause i can't add the same node twice (leads to INFINITE distance)
+    while((int)starterSeq.size() != 4){
+        //Randomly chooses a node from 0 up to numOfNodes
+        randNode = rand() % (dimension + 1);
+
+        //Checks if this node has already been added to starterSeq
+        for(int i = 0; i < 3; i++){
+            if(randNode == alreadyAddedNodes[i]){
+                nodeAlreadyAddedFlag = true;
+            }
+        }
+
+        //Only adds it if this node isn't a repeat
+        if(!nodeAlreadyAddedFlag){
+            starterSeq.push_back(randNode);
+        }
+
+        nodeAlreadyAddedFlag = false; //For next iter
+    }
+
+    starterSeq.push_back(1);
+
+    return starterSeq;
+}
+
+vector<int> GetUnchosenNodes()
+{
+    //TODO: make this func receive the alreadyAddedNodes vector from Choose3RandNodes
+    //So it can make CL (Just pass it to that func by ref, and then pass it by ref to this one as well)
 }
 
 /**
  * @brief Builds a fair solution (though still far from optimized) Using Greedy Randomized Adaptive Search (Insertion-by-cheapest)
  * @return TspSolution
  */
-TspSolution BuildSolution(double** distMatrix)
+TspSolution BuildSolution(double** distMatrix, int dimension)
 {
     TspSolution tspSol;
-    tspSol.sequence = Choose3RandNodes(distMatrix);   //gets s
-    //vector<int> unaddedNodes = getUnchosenNodes();   //gets CL
+    tspSol.sequence = Choose3RandNodes(dimension);   //gets s
+    vector<int> unaddedNodes = GetUnchosenNodes();   //gets CL
 
     while(!unaddedNodes.empty()){
         vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
 
-        insertionCost;
+        //insertionCost;
 
         double alpha = (double)rand() / RAND_MAX;
 
@@ -93,14 +123,14 @@ TspSolution BuildSolution(double** distMatrix)
     return tspSol;
 }
 
-TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, double** distMatrix)
+TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
 {
     TspSolution bestOfAllSolution;
     bestOfAllSolution.cost = INFINITY;
 
     for(int i = 0; i < maxIters; i++){
         //Builds a beginning solution based on fair guesses
-        TspSolution currIterSolution = BuildSolution(distMatrix);
+        TspSolution currIterSolution = BuildSolution(data.getMatrixCost(), data.getDimension());
         TspSolution currBestSolution = currIterSolution;
 
         int iterILS = 0;
@@ -141,7 +171,7 @@ int main(int argc, char** argv)
     data.printMatrixDist();
 
     //Heuristic goes here
-    IteratedLocalSearch(5, 5, data.getMatrixCost());
+    IteratedLocalSearch(5, 5, data);
 
     cout << "----------------------\n";
     cout << "Exemplo de Solucao s = ";
