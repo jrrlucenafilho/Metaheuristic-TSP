@@ -8,7 +8,6 @@ using namespace std;
 vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
 {
     vector<int> starterSeq;
-    solAddedNodes = {0, 0, 0};
 
     int randNode = 0;
     bool nodeAlreadyAddedFlag = false;
@@ -31,9 +30,10 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
         }
 
         //Checks if this node has already been added to starterSeq
-        for(int i = 0; i < 3; i++){
+        for(int i = 0; i < (int)solAddedNodes.size(); i++){
             if(randNode == solAddedNodes[i]){
                 nodeAlreadyAddedFlag = true;
+                break;
             }
         }
 
@@ -42,14 +42,9 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
             starterSeq.push_back(randNode);
             solAddedNodes.push_back(randNode);
         }
-
         nodeAlreadyAddedFlag = false; //For next iter
     }
-
     starterSeq.push_back(1);
-  
-    //Tidies solAddedNodes up
-    solAddedNodes.erase(solAddedNodes.begin(), solAddedNodes.begin() + 3);
 
     return starterSeq;
 }

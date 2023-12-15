@@ -54,11 +54,10 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
 
 //Chooses 3 random nodes in the graph from 1 up to dimension (numOfNodes)
 //Makes a sequence from them following {1, x, y, z, 1} and puts the 3 added nodes into solAddedNodes
+//solAddedNodes must be empty
 vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
 {
     vector<int> starterSeq;
-    solAddedNodes = {0, 0, 0};
-
     int randNode = 0;
     bool nodeAlreadyAddedFlag = false;
 
@@ -80,9 +79,10 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
         }
 
         //Checks if this node has already been added to starterSeq
-        for(int i = 0; i < 3; i++){
+        for(int i = 0; i < (int)solAddedNodes.size(); i++){
             if(randNode == solAddedNodes[i]){
                 nodeAlreadyAddedFlag = true;
+                break;
             }
         }
 
@@ -91,14 +91,9 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
             starterSeq.push_back(randNode);
             solAddedNodes.push_back(randNode);
         }
-
         nodeAlreadyAddedFlag = false; //For next iter
     }
-
     starterSeq.push_back(1);
-  
-    //Tidies solAddedNodes up
-    solAddedNodes.erase(solAddedNodes.begin(), solAddedNodes.begin() + 3);
 
     return starterSeq;
 }
@@ -107,7 +102,7 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
 //Effectively returns CL
 vector<int> GetUnchosenNodes(vector<int>& solAddedNodes)
 {
-    
+
 }
 
 /**
