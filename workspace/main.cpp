@@ -52,16 +52,17 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
     return insertionCost;
 }
 
-vector<int> Choose3RandNodes(int dimension)
+//Chooses 3 random nodes in the graph from 1 up to dimension (numOfNodes)
+//Makes a sequence from them following {1, x, y, z, 1} and puts the 3 added nodes into solAddedNodes
+vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
 {
     vector<int> starterSeq;
-    vector<int> alreadyAddedNodes = {0, 0, 0};
+    solAddedNodes = {0, 0, 0};
 
-    //Pertaining to graph's 2d array
     int randNode = 0;
-    int addedNodes = 0;
-
     bool nodeAlreadyAddedFlag = false;
+
+    srand(static_cast<unsigned int>(time(0)));
 
     starterSeq.reserve(5);  //{1, x, y, z, 1}
     starterSeq.push_back(1);
@@ -72,9 +73,15 @@ vector<int> Choose3RandNodes(int dimension)
         //Randomly chooses a node from 0 up to numOfNodes
         randNode = rand() % (dimension + 1);
 
+        //Handles if rand chooses 0 or 1, since distances 1-indexed here and 1 is the first and last cities
+        //TODO: Check if it can be done on the randNode attr line straight up
+        if((randNode == 0) || (randNode == 1)){
+            randNode = 2;
+        }
+
         //Checks if this node has already been added to starterSeq
         for(int i = 0; i < 3; i++){
-            if(randNode == alreadyAddedNodes[i]){
+            if(randNode == solAddedNodes[i]){
                 nodeAlreadyAddedFlag = true;
             }
         }
@@ -82,20 +89,25 @@ vector<int> Choose3RandNodes(int dimension)
         //Only adds it if this node isn't a repeat
         if(!nodeAlreadyAddedFlag){
             starterSeq.push_back(randNode);
+            solAddedNodes.push_back(randNode);
         }
 
         nodeAlreadyAddedFlag = false; //For next iter
     }
 
     starterSeq.push_back(1);
+  
+    //Tidies solAddedNodes up
+    solAddedNodes.erase(solAddedNodes.begin(), solAddedNodes.begin() + 3);
 
     return starterSeq;
 }
 
-vector<int> GetUnchosenNodes()
+//Receives a vector with the ramdomly-added-to-solution nodes, and removes them from the vector containing all nodes
+//Effectively returns CL
+vector<int> GetUnchosenNodes(vector<int>& solAddedNodes)
 {
-    //TODO: make this func receive the alreadyAddedNodes vector from Choose3RandNodes
-    //So it can make CL (Just pass it to that func by ref, and then pass it by ref to this one as well)
+    
 }
 
 /**
@@ -105,8 +117,9 @@ vector<int> GetUnchosenNodes()
 TspSolution BuildSolution(double** distMatrix, int dimension)
 {
     TspSolution tspSol;
-    tspSol.sequence = Choose3RandNodes(dimension);   //gets s
-    vector<int> unaddedNodes = GetUnchosenNodes();   //gets CL
+    vector<int> addedNodes;
+    tspSol.sequence = Choose3RandNodes(dimension, addedNodes);   //gets s
+    vector<int> unaddedNodes = GetUnchosenNodes(addedNodes);   //gets CL
 
     while(!unaddedNodes.empty()){
         vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
