@@ -98,11 +98,30 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
     return starterSeq;
 }
 
-//Receives a vector with the ramdomly-added-to-solution nodes, and removes them from the vector containing all nodes
+//Receives a vector with the ramdomly-added-to-solution nodes, and removes them from the vector containing all nodes in the graph
 //Effectively returns CL
-vector<int> GetUnchosenNodes(vector<int>& solAddedNodes)
+vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
 {
+    vector<int> unaddedNodes;
+    bool nodeFound;
 
+    //Iterates through s from 2 to numOfNodes (distMatrix is 1-indexed and 1 will always be in the solution)
+    for(int i = 2; i <= dimension; i++){
+        //Checks if current array element is any of the 3 in solAddedNodes (except for 1, since it's beginning/end)
+        for(int j = 0; j < (int)solAddedNodes.size(); j++){
+            //Check if this node was added to solSequence, immediately breaking out of the 3-check loop if it's found
+            if(i == solAddedNodes[j]){
+                nodeFound = true;
+                break;
+            }
+            nodeFound = false;
+        }
+
+        if(!nodeFound){
+            unaddedNodes.push_back(i);
+        }
+    }
+    return unaddedNodes;
 }
 
 /**
@@ -114,7 +133,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     TspSolution tspSol;
     vector<int> addedNodes;
     tspSol.sequence = Choose3RandNodes(dimension, addedNodes);   //gets s
-    vector<int> unaddedNodes = GetUnchosenNodes(addedNodes);   //gets CL
+    vector<int> unaddedNodes = GetUnchosenNodes(dimension, addedNodes);   //gets CL
 
     while(!unaddedNodes.empty()){
         vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
