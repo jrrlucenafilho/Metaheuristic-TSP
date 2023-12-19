@@ -136,9 +136,16 @@ void SortAscendingByCost(vector<InsertionInfo>& insertionInfo)
 }
 
 //Inserts a node into the tsp solution
-void insertIntoSolution(TspSolution tspSol, int node)
+//And sums the current tspSol cost with the inserted node's own
+void InsertIntoSolution(TspSolution& tspSol, InsertionInfo& nodeInsertionInfo)
 {
-    //TODO: Insert element right before the last 1
+    //First adds up the cost of the to-be-added node
+    tspSol.cost += nodeInsertionInfo.cost;
+
+    //Adds the node into the tspSol sequence
+    tspSol.sequence.pop_back();
+    tspSol.sequence.push_back(nodeInsertionInfo.insertedNode);
+    tspSol.sequence.push_back(1);
 }
 
 /**
@@ -159,7 +166,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 
         double alpha = (double)rand() / RAND_MAX;
         int selected = rand() % ((int)ceil(alpha * insertionCost.size()));
-        insertIntoSolution(tspSol, insertionCost[selected].insertedNode);
+        InsertIntoSolution(tspSol, insertionCost[selected]);
     }
 
     return tspSol;
@@ -180,7 +187,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
         while(iterILS <= maxIterILS){
             //Tries to enhance the fair-guessed solution
             //By doing small modifications to it
-            //LocalSearch(&currIterSolution);
+            //LocalSearch(currIterSolution);
 
             if(currIterSolution.cost < currBestSolution.cost){
                 currBestSolution = currIterSolution;
