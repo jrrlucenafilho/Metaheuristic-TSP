@@ -236,14 +236,14 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m)
 //discarding whicever makes cost higher than currCost
 void LocalSearch(TspSolution* tspSol, double** distMatrix)
 {
-    vector<int> neighborhoodStructure = {1, 2, 3, 4, 5};
+    vector<int> NH_structures = {1, 2, 3, 4, 5};
     bool solImproved = false;
 
-    while(!neighborhoodStructure.empty()){
-        int rand_n = rand() % neighborhoodStructure.size();
+    while(!NH_structures.empty()){
+        int rand_n = rand() % NH_structures.size();
 
         //Chose randomly
-        switch(neighborhoodStructure[rand_n]){
+        switch(NH_structures[rand_n]){
             case 1:
                 solImproved = BestImprovementSwap(tspSol, distMatrix);
                 break;
