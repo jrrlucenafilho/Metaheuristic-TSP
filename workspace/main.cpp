@@ -185,6 +185,84 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     return tspSol;
 }
 
+/*BestImprovement funcs with differing methods to be used for RVND in LocalSearch()*/
+//Tries to get the best swap possible in the solution
+//As in the one that best minimizes the solution's cost
+//"m" here means distMatrix
+bool BestImprovementSwap(TspSolution* tspSol, double** m)
+{
+    //"Delta" as in the overall solution's cost
+    double bestDelta = 0;
+    int best_i, best_j;
+
+    for(int i = 1; i < (int)tspSol->sequence.size()-1; i++){
+        int vi = tspSol->sequence[i];
+        int vi_next = tspSol->sequence[i + 1];
+        int vi_prev = tspSol->sequence[i - 1];
+
+        for(int j = i + 1; i < tspSol->sequence.size() - 1; j ++){
+            int vj = tspSol->sequence[j];
+            int vj_next = tspSol->sequence[i + 1];
+            int vj_prev = tspSol->sequence[i - 1];
+
+            //Calculating delta (cost) for curr possible swap
+            double currDelta = -m[vi_prev][vi] - m[vi][vi_next] + m[vi_prev][vj]
+                               + m[vj][vi_next] - m[vj_prev][vj] - m[vj][vj_next]
+                               + m[vj_prev][vi] + m[vi][vj_next];
+
+            //Cost comparison
+            if(currDelta < bestDelta){
+                bestDelta = currDelta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    //Actual swap, only happens when overall solution cost lowers
+    if(bestDelta < 0){
+        swap(tspSol->sequence[best_i], tspSol->sequence[best_j]);
+        tspSol->cost = tspSol->cost + bestDelta;
+        return true;
+    }
+
+    return false;
+}
+
+//Increases the quality of current iteration's solution
+//Does that by modifying the solution and evaluing the impact of each change
+//Using the Random Variable Neighborhood Descent method
+//Which just tests different neighborhood structures with a tad of randomness when choosing
+//discarding whicever makes cost higher than currCost
+void LocalSearch(TspSolution* tspSol, double** distMatrix)
+{
+    vector<int> neighborhoodStructure = {1, 2, 3, 4, 5};
+    bool solImproved = false;
+
+    while(!neighborhoodStructure.empty()){
+        int rand_n = rand() % neighborhoodStructure.size();
+
+        //Chose randomly
+        switch(neighborhoodStructure[rand_n]){
+            case 1:
+                solImproved = BestImprovementSwap(tspSol, distMatrix);
+                break;
+            case 2:
+                //solImproved = BestImprovement2Opt(tspSol, distMatrix);
+                break;
+            case 3:
+                //solImproved = BestImprovementOrOpt(tspSol, distMatrix, 1);
+                break;
+            case 4:
+                //solImproved = BestImprovementOrOpt(tspSol, distMatrix, 2);
+                break;
+            case 5:
+                //solImproved = BestImprovementOrOpt(tspSol, distMatrix, 3);
+                break;
+        }
+    }
+}
+
 TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
 {
     TspSolution bestOfAllSolution;
@@ -200,7 +278,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
         while(iterILS <= maxIterILS){
             //Tries to enhance the fair-guessed solution
             //By doing small modifications to it
-            //LocalSearch(currIterSolution);
+            LocalSearch(&currIterSolution, data.getMatrixCost());
 
             if(currIterSolution.cost < currBestSolution.cost){
                 currBestSolution = currIterSolution;
