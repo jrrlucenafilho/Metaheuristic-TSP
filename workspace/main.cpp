@@ -148,6 +148,17 @@ void InsertIntoSolution(TspSolution& tspSol, InsertionInfo& nodeInsertionInfo)
     tspSol.sequence.push_back(1);
 }
 
+//Removes selected node
+//Assumes it's not repeated (which both 's' and 'CL' shouldn't be anyways)
+void RemoveFromUnaddedNodes(vector<int>& unaddedNodes, int node)
+{
+    for(int i = 0; i < (int)unaddedNodes.size(); i++){
+        if(unaddedNodes[i] == node){
+            unaddedNodes.erase(unaddedNodes.begin() + i);
+        }
+    }
+}
+
 /**
  * @brief Builds a fair solution (though still far from optimized) Using Greedy Randomized Adaptive Search (Insertion-by-cheapest)
  * @return TspSolution
@@ -167,6 +178,8 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
         double alpha = (double)rand() / RAND_MAX;
         int selected = rand() % ((int)ceil(alpha * insertionCost.size()));
         InsertIntoSolution(tspSol, insertionCost[selected]);
+
+        RemoveFromUnaddedNodes(unaddedNodes, insertionCost[selected].insertedNode);
     }
 
     return tspSol;
