@@ -1,6 +1,7 @@
 #include "Data.hpp"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -73,7 +74,6 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
         randNode = rand() % (dimension + 1);
 
         //Handles if rand chooses 0 or 1, since distances 1-indexed here and 1 is the first and last cities
-        //TODO: Check if it can be done on the randNode attr line straight up
         if((randNode == 0) || (randNode == 1)){
             randNode = 2;
         }
@@ -107,9 +107,9 @@ vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
 
     //Iterates through s from 2 to numOfNodes (distMatrix is 1-indexed and 1 will always be in the solution)
     for(int i = 2; i <= dimension; i++){
-        //Checks if current array element is any of the 3 in solAddedNodes (except for 1, since it's beginning/end)
+        //Checks if current array element is any of the 3 in solAddedNodes
         for(int j = 0; j < (int)solAddedNodes.size(); j++){
-            //Check if this node was added to solSequence, immediately breaking out of the 3-check loop if it's found
+            //Checks if this node was added to solSequence, immediately breaking out of the 3-check loop if it's found
             if(i == solAddedNodes[j]){
                 nodeFound = true;
                 break;
@@ -122,6 +122,23 @@ vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
         }
     }
     return unaddedNodes;
+}
+
+//Sorting the costs
+bool CompareByCost(InsertionInfo& prevInsertionInfo, InsertionInfo& currInsertionInfo)
+{
+    return prevInsertionInfo.cost < currInsertionInfo.cost;
+}
+
+void SortAscendingByCost(vector<InsertionInfo>& insertionInfo)
+{
+    sort(insertionInfo.begin(), insertionInfo.end(), CompareByCost);
+}
+
+//Inserts a node into the tsp solution
+void insertIntoSolution(TspSolution tspSol, int node)
+{
+    //TODO: Insert element right before the last 1
 }
 
 /**
@@ -138,13 +155,11 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     while(!unaddedNodes.empty()){
         vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
 
-        //insertionCost;
+        SortAscendingByCost(insertionCost);
 
         double alpha = (double)rand() / RAND_MAX;
-
         int selected = rand() % ((int)ceil(alpha * insertionCost.size()));
-
-        //insertIntoSolution(tspSol, insertionCost[selected].insertedNode); //k
+        insertIntoSolution(tspSol, insertionCost[selected].insertedNode);
     }
 
     return tspSol;
