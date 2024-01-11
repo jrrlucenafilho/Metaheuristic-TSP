@@ -73,7 +73,7 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
         //Randomly chooses a node from 0 up to numOfNodes
         randNode = rand() % (dimension + 1);
 
-        //Handles if rand chooses 0 or 1, since distances 1-indexed here and 1 is the first and last cities
+        //Handles if rand chooses 0 or 1, since distances 1-indexed here and 1 is the first and last city
         if((randNode == 0) || (randNode == 1)){
             randNode = 2;
         }
@@ -155,6 +155,7 @@ void RemoveFromUnaddedNodes(vector<int>& unaddedNodes, int node)
     for(int i = 0; i < (int)unaddedNodes.size(); i++){
         if(unaddedNodes[i] == node){
             unaddedNodes.erase(unaddedNodes.begin() + i);
+            break;
         }
     }
 }
@@ -193,17 +194,18 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m)
 {
     //"Delta" as in the overall solution's cost
     double bestDelta = 0;
-    int best_i, best_j;
+    int best_i = 0, best_j = 0;
 
-    for(int i = 1; i < (int)tspSol->sequence.size()-1; i++){
+    //Iterates over all pairs of vertices in the tour. For each pair (i, j), it calculates the change in cost (currDelta) that would result from swapping these two vertices.
+    for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
         int vi = tspSol->sequence[i];
         int vi_next = tspSol->sequence[i + 1];
         int vi_prev = tspSol->sequence[i - 1];
 
-        for(int j = i + 1; i < tspSol->sequence.size() - 1; j ++){
+        for(int j = i + 1; j < (int)tspSol->sequence.size() - 1; j++){
             int vj = tspSol->sequence[j];
-            int vj_next = tspSol->sequence[i + 1];
-            int vj_prev = tspSol->sequence[i - 1];
+            int vj_next = tspSol->sequence[j + 1];
+            int vj_prev = tspSol->sequence[j - 1];
 
             //Calculating delta (cost) for curr possible swap
             double currDelta = -m[vi_prev][vi] - m[vi][vi_next] + m[vi_prev][vj]
@@ -229,11 +231,46 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m)
     return false;
 }
 
+//2-Opt (TOTEST)
+bool BestImprovement2Opt(TspSolution* tspSol, double** m)
+{
+    //"Delta" as in the overall solution's cost
+    double bestDelta = 0;
+    double initialDelta, currDelta;
+    int best_i = 0, best_j = 0;
+
+    for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
+        initialDelta = -(m[tspSol->sequence[i-1]][tspSol->sequence[i]]);
+
+        for(int j = i + 1; j < (int)tspSol->sequence.size() - 1; j++){
+            currDelta = initialDelta - m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
+            + m[tspSol->sequence[i - 1]][tspSol->sequence[j]] 
+            + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
+
+            //Cost comparison
+            if(currDelta < bestDelta){
+                bestDelta = currDelta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    //Actual swap
+    if(bestDelta < 0){
+        reverse(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_j + 1);
+        tspSol->cost = tspSol->cost + bestDelta;
+        return true;
+    }
+
+    return false;
+}
+
 //Increases the quality of current iteration's solution
 //Does that by modifying the solution and evaluing the impact of each change
 //Using the Random Variable Neighborhood Descent method
 //Which just tests different neighborhood structures with a tad of randomness when choosing
-//discarding whicever makes cost higher than currCost
+//discarding whichever makes cost higher than currCost
 void LocalSearch(TspSolution* tspSol, double** distMatrix)
 {
     vector<int> NH_structures = {1, 2, 3, 4, 5};
@@ -242,13 +279,13 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix)
     while(!NH_structures.empty()){
         int rand_n = rand() % NH_structures.size();
 
-        //Chose randomly
+        //Chooses randomly
         switch(NH_structures[rand_n]){
             case 1:
                 solImproved = BestImprovementSwap(tspSol, distMatrix);
                 break;
             case 2:
-                //solImproved = BestImprovement2Opt(tspSol, distMatrix);
+                solImproved = BestImprovement2Opt(tspSol, distMatrix);
                 break;
             case 3:
                 //solImproved = BestImprovementOrOpt(tspSol, distMatrix, 1);
@@ -259,6 +296,13 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix)
             case 5:
                 //solImproved = BestImprovementOrOpt(tspSol, distMatrix, 3);
                 break;
+        }
+
+        //Checks if solution's improved, erasing neighborhood structure if not
+        if(solImproved){
+            NH_structures = {1, 2, 3, 4, 5};
+        }else{
+            NH_structures.erase(NH_structures.begin() + rand_n);
         }
     }
 }
