@@ -370,9 +370,9 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 
         //OrOpt-2 case
         if(movedBlockSize == 2){
-        vector<int> reinsertSequence(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 2);
-        tspSol->sequence.erase(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 2);
-        tspSol->sequence.insert(tspSol->sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
+            vector<int> reinsertSequence(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 2);
+            tspSol->sequence.erase(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 2);
+            tspSol->sequence.insert(tspSol->sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
         }
 
         //OrOpt-3 case
