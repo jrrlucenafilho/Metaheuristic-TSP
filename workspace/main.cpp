@@ -241,10 +241,10 @@ bool BestImprovement2Opt(TspSolution* tspSol, double** m)
     int best_i = 0, best_j = 0;
 
     for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
-        initialDelta = -(m[tspSol->sequence[i-1]][tspSol->sequence[i]]);
+        initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]];
 
         for(int j = i + 1; j < (int)tspSol->sequence.size() - 1; j++){
-            currDelta = initialDelta - m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
+            currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
                                      + m[tspSol->sequence[i - 1]][tspSol->sequence[j]] 
                                      + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
 
@@ -431,6 +431,62 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix)
     }
 }
 
+double CalculateSequenceCost(vector<int>& sequence, double** m)
+{
+    double cost = 0;
+
+    for(int i = 0, j = 1; i < (int)sequence.size() - 1; i++, j++){
+        cost += m[sequence[i]][sequence[j]];
+    }
+
+    return cost;
+}
+
+//Return TspSolution, may have to call a cost-calc function inside here
+TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
+{
+    vector<int> copiedSequence = tspSol.sequence;
+    int segmentMaxLength = dimension / 10;
+    TspSolution disturbedSol;
+
+    //Will mark the index of first and last elements of each subsequence
+    //Used to make it so they don't overlap
+    int subseq1Index_begin, subseq2Index_begin;
+    int subseq1Index_end, subseq2Index_end;
+
+    //Length of each subsequence and of the space among them
+    int subseq2Length, inbetweenSubseqsLength; //subseq2Length uneeded
+
+    subseq1Index_begin = 2 + rand() % ((dimension - segmentMaxLength - 1) - 2 + 1);
+    subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 1);
+
+    subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 1);
+    subseq2Index_end = (subseq2Index_begin + 1) + rand() % ((subseq2Index_begin + segmentMaxLength - 1) - (subseq2Index_begin + 1) + 1);
+    
+    //Actually making the subsequences from rand calc'd indexes
+    vector<int> subseq1(copiedSequence.begin() + subseq1Index_begin, copiedSequence.begin() + subseq1Index_end);
+    vector<int> subseq2(copiedSequence.begin() + subseq2Index_begin, copiedSequence.begin() + subseq2Index_end);
+
+    //Lengths and space calc
+    //subseq1Length = subseq1Index_end - subseq1Index_begin;
+    subseq2Length = subseq2Index_end - subseq2Index_begin;
+    inbetweenSubseqsLength = subseq2Index_begin - subseq1Index_end;
+
+    //Disturbing copied sequence
+    //Swapping these not-necessarily-equally-sized subseqs in the main sequence
+    copiedSequence.erase(copiedSequence.begin() + subseq1Index_begin, copiedSequence.begin() + subseq1Index_end);
+    copiedSequence.insert(copiedSequence.begin() + subseq1Index_begin, subseq2.begin(), subseq2.end());
+
+    copiedSequence.erase(copiedSequence.begin() + subseq1Index_begin + subseq2Length + inbetweenSubseqsLength, copiedSequence.begin() + subseq1Index_begin + subseq2Length + inbetweenSubseqsLength + subseq2Length);
+    copiedSequence.insert(copiedSequence.begin() + subseq1Index_begin + subseq2Length + inbetweenSubseqsLength, subseq1.begin(), subseq1.end());
+
+    //Calculating and attributing to disturbed solution
+    disturbedSol.cost = CalculateSequenceCost(copiedSequence, m);
+    disturbedSol.sequence = copiedSequence;
+
+    return disturbedSol;
+}
+
 TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
 {
     TspSolution bestOfAllSolution;
@@ -455,7 +511,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
 
             //If not possible to make it better, shake the current best solution up a lil
             //to see if we didn't just go into a 'local best pitfall'
-            //currIterSolution = Disturbance(currBestSolution);
+            currIterSolution = Disturbance(currBestSolution, data.getMatrixCost(), data.getDimension());
             iterILS++;
         }
 
@@ -469,7 +525,10 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
 
 int main(int argc, char** argv)
 {
+    int maxIter = 50;
+    int maxIterILS;
     auto data = Data(argc, argv[1]);
+
     data.read();
 
     size_t n = data.getDimension();
@@ -478,8 +537,14 @@ int main(int argc, char** argv)
     cout << "DistanceMatrix: " << endl;
     data.printMatrixDist();
 
-    //Heuristic goes here
-    IteratedLocalSearch(5, 5, data);
+    //Defining Iters
+    if(data.getDimension() >= 150){
+        maxIterILS = data.getDimension() / 2;
+    }else{
+        maxIterILS = data.getDimension();
+    }
+
+    IteratedLocalSearch(maxIter, maxIterILS, data);
 
     cout << "----------------------\n";
     cout << "Exemplo de Solucao s = ";
