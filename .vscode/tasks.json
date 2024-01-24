@@ -30,6 +30,7 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-g",
+				//"-O3",
 				"-Wall",
 				"-Wextra",
 				"${file}",

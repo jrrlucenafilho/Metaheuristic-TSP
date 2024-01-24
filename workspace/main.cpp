@@ -176,7 +176,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     TspSolution tspSol;
     vector<int> addedNodes;
     tspSol.sequence = Choose3RandNodes(dimension, addedNodes);   //gets s
-    vector<int> unaddedNodes = GetUnchosenNodes(dimension, addedNodes);   //gets CL
+    vector<int> unaddedNodes = GetUnchosenNodes(dimension, addedNodes);   //gets CL //Leaving five in a dimension 5 graph
 
     while(!unaddedNodes.empty()){
         vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
@@ -280,7 +280,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 
     //Reinsertion Case
     if(movedBlockSize == 1){
-        for(int i = 1; i < (int)tspSol->sequence.size(); i++){
+        for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
             initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]] 
                            - m[tspSol->sequence[i]][tspSol->sequence[i + 1]] 
                            + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 1]];
@@ -400,7 +400,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 //Using the Random Variable Neighborhood Descent method
 //Which just tests different neighborhood structures with a tad of randomness when choosing
 //discarding whichever makes cost higher than currCost
-void LocalSearch(TspSolution* tspSol, double** distMatrix)
+void LocalSearch(TspSolution* tspSol, double** distMatrix)  //TODO: program is just staying here lol, fix this
 {
     vector<int> NH_structures = {1, 2, 3, 4, 5};
     bool solutionImproved = false;
@@ -533,6 +533,7 @@ int main(int argc, char** argv)
     int maxIter = 50;
     int maxIterILS;
     auto data = Data(argc, argv[1]);
+    TspSolution tspSol;
 
     data.read();
 
@@ -549,22 +550,28 @@ int main(int argc, char** argv)
         maxIterILS = data.getDimension();
     }
 
-    IteratedLocalSearch(maxIter, maxIterILS, data);
+    tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
 
     cout << "----------------------\n";
-    cout << "Exemplo de Solucao s = ";
+    //cout << "Exemplo de Solucao s = ";
+    cout << "Solução s = ";
 
-    double cost = 0.0;
+    //double cost = 0.0;
 
-    for(size_t i = 1; i < n; i++){
-        cout << i << " -> ";
-        cost += data.getDistance(i, i+1);
+    //for(size_t i = 1; i < n; i++){
+    //    cout << i << " -> ";
+    //    cost += data.getDistance(i, i+1);
+    //}
+
+    //cost += data.getDistance(n, 1);
+
+    //cout << n << " -> " << 1 << endl;
+
+    for(size_t i = 0; i < tspSol.sequence.size() - 1; i++){
+        cout << tspSol.sequence[i] << " -> ";
     }
 
-    cost += data.getDistance(n, 1);
-
-    cout << n << " -> " << 1 << endl;
-    cout << "Custo de S: " << cost << endl;
+    cout << "\nCusto de S: " << tspSol.cost << '\n';
 
     return 0;
 }
