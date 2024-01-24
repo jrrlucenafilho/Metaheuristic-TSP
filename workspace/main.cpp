@@ -39,15 +39,15 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
     int i, j;
 
     //Iterating among all nodes in the solution sequence, going edge-by-edge (df 2 nodes on each edge)
-    for(int edgeIter = 0; edgeIter < (int)tspSol.sequence.size() - 1; edgeIter++){
-        i = tspSol.sequence[edgeIter];  //Vertex 1
-        j = tspSol.sequence[edgeIter + 1];  //Vertex 2
+    for(int node1 = 0, node2 = 1; node1 < (int)tspSol.sequence.size() - 1; node1++, node2++){
+        i = tspSol.sequence[node1];
+        j = tspSol.sequence[node2];
 
         //For each node/vertex
         for(int k : unaddedVertices){
-            insertionCost[l].cost = distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j];    //TODO: Check about c
+            insertionCost[l].cost = distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j];    //TODO: Check segfault on last iter of outer loop (even with 10 nodes only)
             insertionCost[l].insertedNode = k;
-            insertionCost[l].removedGraphEdge = edgeIter;
+            insertionCost[l].removedGraphEdge = node1;
             l++;
         }
     }
@@ -80,6 +80,11 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
             randNode = 2;
         }
 
+        //Handles if chosen randNode ends up being equals to dimension (out of bounds by 1)
+        if(randNode == dimension){
+            randNode = dimension - 1;
+        }
+
         //Checks if this node has already been added to starterSeq
         for(int i = 0; i < (int)solAddedNodes.size(); i++){
             if(randNode == solAddedNodes[i]){
@@ -108,7 +113,7 @@ vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
     bool nodeFound;
 
     //Iterates through s from 2 to numOfNodes (distMatrix is 1-indexed and 1 will always be in the solution)
-    for(int i = 2; i <= dimension; i++){
+    for(int i = 2; i <= dimension - 1; i++){    //Changed to "dimension - 1" due to out-of-bound segfault
         //Checks if current array element is any of the 3 in solAddedNodes
         for(int j = 0; j < (int)solAddedNodes.size(); j++){
             //Checks if this node was added to solSequence, immediately breaking out of the 3-check loop if it's found
@@ -283,7 +288,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
             for(int j = 1; j < (int)tspSol->sequence.size() - 1; j++){
                 if(i != j){
                     if(i < j){
-                        currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
+                        currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] //Segfault here
                                                  + m[tspSol->sequence[i]][tspSol->sequence[j]] 
                                                  + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
                     }else{
