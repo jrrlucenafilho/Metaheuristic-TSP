@@ -1,5 +1,3 @@
-//NOTE: may have to change all tspSol->sequence.size() to "dimension - 1" on the neighborhood structure functions
-
 #include "Data.hpp"
 #include <iostream>
 #include <vector>
@@ -45,7 +43,7 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
 
         //For each node/vertex
         for(int k : unaddedVertices){
-            insertionCost[l].cost = distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j];    //TODO: Check segfault on last iter of outer loop (even with 10 nodes only)
+            insertionCost[l].cost = distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j];
             insertionCost[l].insertedNode = k;
             insertionCost[l].removedGraphEdge = node1;
             l++;
@@ -167,6 +165,17 @@ void RemoveFromUnaddedNodes(vector<int>& unaddedNodes, int node)
     }
 }
 
+double CalculateSequenceCost(vector<int>& sequence, double** m)
+{
+    double cost = 0;
+
+    for(int i = 0, j = 1; i < (int)sequence.size() - 1; i++, j++){
+        cost += m[sequence[i]][sequence[j]];
+    }
+
+    return cost;
+}
+
 /**
  * @brief Builds a fair solution (though still far from optimized) Using Greedy Randomized Adaptive Search (Insertion-by-cheapest)
  * @return TspSolution
@@ -177,6 +186,9 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     vector<int> addedNodes;
     tspSol.sequence = Choose3RandNodes(dimension, addedNodes);   //gets s
     vector<int> unaddedNodes = GetUnchosenNodes(dimension, addedNodes);   //gets CL //Leaving five in a dimension 5 graph
+
+    //Calculating cost for the initial solution
+    tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
 
     while(!unaddedNodes.empty()){
         vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
@@ -197,27 +209,27 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 //Tries to get the best swap possible in the solution
 //As in the one that best minimizes the solution's cost
 //"m" here means distMatrix
-bool BestImprovementSwap(TspSolution* tspSol, double** m)
+bool BestImprovementSwap(TspSolution* tspSol, double** m, int dimension)
 {
     //"Delta" as in the overall solution's cost
     double bestDelta = 0;
     int best_i = 0, best_j = 0;
 
     //Iterates over all pairs of vertices in the tour. For each pair (i, j), it calculates the change in cost (currDelta) that would result from swapping these two vertices.
-    for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
+    for(int i = 1; i < dimension - 1; i++){
         int vi = tspSol->sequence[i];
         int vi_next = tspSol->sequence[i + 1];
         int vi_prev = tspSol->sequence[i - 1];
 
-        for(int j = i + 1; j < (int)tspSol->sequence.size() - 1; j++){
+        for(int j = i + 1; j < dimension - 1; j++){
             int vj = tspSol->sequence[j];
             int vj_next = tspSol->sequence[j + 1];
             int vj_prev = tspSol->sequence[j - 1];
 
             //Calculating delta (cost) for curr possible swap
-            double currDelta = -m[vi_prev][vi] - m[vi][vi_next] + m[vi_prev][vj]
-                               + m[vj][vi_next] - m[vj_prev][vj] - m[vj][vj_next]
-                               + m[vj_prev][vi] + m[vi][vj_next];
+            double currDelta = -m[vi_prev][vi] - m[vi][vi_next] + m[vi_prev][vj] 
+                                + m[vj][vi_next] - m[vj_prev][vj] - m[vj][vj_next] 
+                                + m[vj_prev][vi] + m[vi][vj_next];
 
             //Cost comparison
             if(currDelta < bestDelta){
@@ -239,16 +251,16 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m)
 }
 
 //2-Opt (TOTEST)
-bool BestImprovement2Opt(TspSolution* tspSol, double** m)
+bool BestImprovement2Opt(TspSolution* tspSol, double** m, int dimension)
 {
     double bestDelta = 0;
     double initialDelta, currDelta;
     int best_i = 0, best_j = 0;
 
-    for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
+    for(int i = 1; i < dimension - 1; i++){
         initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]];
 
-        for(int j = i + 1; j < (int)tspSol->sequence.size() - 1; j++){
+        for(int j = i + 1; j < dimension - 1; j++){
             currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
                                      + m[tspSol->sequence[i - 1]][tspSol->sequence[j]] 
                                      + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
@@ -272,7 +284,7 @@ bool BestImprovement2Opt(TspSolution* tspSol, double** m)
 }
 
 //OrOpt (TOTEST)
-bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
+bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int movedBlockSize)
 {
     double bestDelta = 0;
     double initialDelta, currDelta;
@@ -280,12 +292,12 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 
     //Reinsertion Case
     if(movedBlockSize == 1){
-        for(int i = 1; i < (int)tspSol->sequence.size() - 1; i++){
+        for(int i = 1; i < dimension - 1; i++){
             initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]] 
                            - m[tspSol->sequence[i]][tspSol->sequence[i + 1]] 
                            + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 1]];
         
-            for(int j = 1; j < (int)tspSol->sequence.size() - 1; j++){
+            for(int j = 1; j < dimension - 1; j++){
                 if(i != j){
                     if(i < j){
                         currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] //Segfault here
@@ -309,12 +321,12 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 
     //OrOpt-2 case
     if(movedBlockSize == 2){
-        for(int i = 1; i < (int)tspSol->sequence.size() - 2; i++){
+        for(int i = 1; i < dimension - 2; i++){
             initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]]
                            - m[tspSol->sequence[i + 1]][tspSol->sequence[i + 2]] 
                            + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 2]];
 
-            for(int j = 1; j < (int)tspSol->sequence.size() - 3; j++){
+            for(int j = 1; j < dimension - 3; j++){
                 if(i != j){
                     if(i < j){
                         currDelta = initialDelta -m[tspSol->sequence[j + 1]][tspSol->sequence[j + 2]] 
@@ -338,12 +350,12 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 
     //OrOpt-3 case
     if(movedBlockSize == 3){
-        for(int i = 1; i < (int)tspSol->sequence.size() - 3; i++){
+        for(int i = 1; i < dimension - 3; i++){
             initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]]
                            - m[tspSol->sequence[i + 2]][tspSol->sequence[i + 3]] 
                            + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 3]];
     
-            for(int j = 1; j < (int)tspSol->sequence.size() - 4; j++){
+            for(int j = 1; j < dimension - 4; j++){
                 if(i != j){
                     if(i < j){
                         currDelta = initialDelta -m[tspSol->sequence[j + 2]][tspSol->sequence[j + 3]] 
@@ -400,7 +412,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int movedBlockSize)
 //Using the Random Variable Neighborhood Descent method
 //Which just tests different neighborhood structures with a tad of randomness when choosing
 //discarding whichever makes cost higher than currCost
-void LocalSearch(TspSolution* tspSol, double** distMatrix)  //TODO: program is just staying here lol, fix this
+void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)  //TODO: program is just staying here lol, fix this
 {
     vector<int> NH_structures = {1, 2, 3, 4, 5};
     bool solutionImproved = false;
@@ -411,19 +423,19 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix)  //TODO: program is j
         //Chooses randomly
         switch(NH_structures[rand_n]){
             case 1:
-                solutionImproved = BestImprovementSwap(tspSol, distMatrix);
+                solutionImproved = BestImprovementSwap(tspSol, distMatrix, dimension); //TODO: somehow this always improves, check if it's true
                 break;
             case 2:
-                solutionImproved = BestImprovement2Opt(tspSol, distMatrix);
+                solutionImproved = BestImprovement2Opt(tspSol, distMatrix, dimension);
                 break;
             case 3:
-                solutionImproved = BestImprovementOrOpt(tspSol, distMatrix, 1);
+                solutionImproved = BestImprovementOrOpt(tspSol, distMatrix, dimension, 1);
                 break;
             case 4:
-                solutionImproved = BestImprovementOrOpt(tspSol, distMatrix, 2);
+                solutionImproved = BestImprovementOrOpt(tspSol, distMatrix, dimension, 2);
                 break;
             case 5:
-                solutionImproved = BestImprovementOrOpt(tspSol, distMatrix, 3);
+                solutionImproved = BestImprovementOrOpt(tspSol, distMatrix, dimension, 3);
                 break;
         }
 
@@ -434,17 +446,6 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix)  //TODO: program is j
             NH_structures.erase(NH_structures.begin() + rand_n);
         }
     }
-}
-
-double CalculateSequenceCost(vector<int>& sequence, double** m)
-{
-    double cost = 0;
-
-    for(int i = 0, j = 1; i < (int)sequence.size() - 1; i++, j++){
-        cost += m[sequence[i]][sequence[j]];
-    }
-
-    return cost;
 }
 
 //Return TspSolution, may have to call a cost-calc function inside here
@@ -485,7 +486,7 @@ TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
     copiedSequence.erase(copiedSequence.begin() + subseq1Index_begin + subseq2Length + inbetweenSubseqsLength, copiedSequence.begin() + subseq1Index_begin + subseq2Length + inbetweenSubseqsLength + subseq2Length);
     copiedSequence.insert(copiedSequence.begin() + subseq1Index_begin + subseq2Length + inbetweenSubseqsLength, subseq1.begin(), subseq1.end());
 
-    //Calculating and attributing to disturbed solution
+    //Calculating cost and attributing to disturbed solution
     disturbedSol.cost = CalculateSequenceCost(copiedSequence, m);
     disturbedSol.sequence = copiedSequence;
 
@@ -507,7 +508,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
         while(iterILS <= maxIterILS){
             //Tries to enhance the fair-guessed solution
             //By doing small modifications to it
-            LocalSearch(&currIterSolution, data.getMatrixCost());
+            LocalSearch(&currIterSolution, data.getMatrixCost(), data.getDimension());
 
             if(currIterSolution.cost < currBestSolution.cost){
                 currBestSolution = currIterSolution;
