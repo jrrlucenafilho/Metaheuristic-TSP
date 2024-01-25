@@ -213,25 +213,24 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m, int dimension)
 {
     //"Delta" as in the overall solution's cost
     double bestDelta = 0;
+    double currDelta;
+    double toBeRemovedSection;
     int best_i = 0, best_j = 0;
 
-    //Iterates over all pairs of vertices in the tour. For each pair (i, j), it calculates the change in cost (currDelta) that would result from swapping these two vertices.
     for(int i = 1; i < dimension - 1; i++){
-        int vi = tspSol->sequence[i];
-        int vi_next = tspSol->sequence[i + 1];
-        int vi_prev = tspSol->sequence[i - 1];
-
         for(int j = i + 1; j < dimension - 1; j++){
-            int vj = tspSol->sequence[j];
-            int vj_next = tspSol->sequence[j + 1];
-            int vj_prev = tspSol->sequence[j - 1];
+            toBeRemovedSection = -(m[tspSol->sequence[i]][tspSol->sequence[i + 1]] + m[tspSol->sequence[i]][tspSol->sequence[i - 1]] 
+                                 + m[tspSol->sequence[j]][tspSol->sequence[j + 1]] + m[tspSol->sequence[j]][tspSol->sequence[j - 1]]);
+        
+            //In case of neighboring nodes
+            if(j == i + 1){
+                currDelta = - m[tspSol->sequence[i - 1]][tspSol->sequence[i]] - m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
+                            + m[tspSol->sequence[i - 1]][tspSol->sequence[j]] + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
+            }else{
+                currDelta = toBeRemovedSection + m[tspSol->sequence[i]][tspSol->sequence[j + 1]] + m[tspSol->sequence[i]][tspSol->sequence[j - 1]] 
+                            + m[tspSol->sequence[j]][tspSol->sequence[i + 1]] + m[tspSol->sequence[j]][tspSol->sequence[i - 1]];
+            }
 
-            //Calculating delta (cost) for curr possible swap
-            double currDelta = -m[vi_prev][vi] - m[vi][vi_next] + m[vi_prev][vj] 
-                                + m[vj][vi_next] - m[vj_prev][vj] - m[vj][vj_next] 
-                                + m[vj_prev][vi] + m[vi][vj_next];
-
-            //Cost comparison
             if(currDelta < bestDelta){
                 bestDelta = currDelta;
                 best_i = i;
@@ -412,7 +411,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
 //Using the Random Variable Neighborhood Descent method
 //Which just tests different neighborhood structures with a tad of randomness when choosing
 //discarding whichever makes cost higher than currCost
-void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)  //TODO: program is just staying here lol, fix this
+void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)
 {
     vector<int> NH_structures = {1, 2, 3, 4, 5};
     bool solutionImproved = false;
@@ -423,7 +422,7 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)  //TOD
         //Chooses randomly
         switch(NH_structures[rand_n]){
             case 1:
-                solutionImproved = BestImprovementSwap(tspSol, distMatrix, dimension); //TODO: somehow this always improves, check if it's true
+                solutionImproved = BestImprovementSwap(tspSol, distMatrix, dimension);
                 break;
             case 2:
                 solutionImproved = BestImprovement2Opt(tspSol, distMatrix, dimension);
@@ -452,7 +451,7 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)  //TOD
 TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
 {
     vector<int> copiedSequence = tspSol.sequence;
-    int segmentMaxLength = dimension / 10;
+    int segmentMaxLength = dimension / 10; //TODO: Might have to ceil() this with double casting, check it
     TspSolution disturbedSol;
 
     //Will mark the index of first and last elements of each subsequence
@@ -466,7 +465,7 @@ TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
     subseq1Index_begin = 2 + rand() % ((dimension - segmentMaxLength - 1) - 2 + 1);
     subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 1);
 
-    subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 1);
+    subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 1); //Arithmetic Exception
     subseq2Index_end = (subseq2Index_begin + 1) + rand() % ((subseq2Index_begin + segmentMaxLength - 1) - (subseq2Index_begin + 1) + 1);
     
     //Actually making the subsequences from rand calc'd indexes
