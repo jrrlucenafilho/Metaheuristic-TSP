@@ -10,7 +10,7 @@ typedef struct {
     double cost;
 } TspSolution;
 
-bool BestImprovementSwap(TspSolution* tspSol, double** m, int dimension)
+bool BestImprovementSwap1(TspSolution* tspSol, double** m, int dimension)
 {
     //"Delta" as in the overall solution's cost
     double bestDelta = 0;

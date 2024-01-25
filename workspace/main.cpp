@@ -447,11 +447,16 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)
     }
 }
 
+int BoundedRand(int min, int max)
+{
+    return min + rand() % (max - min + 1);
+}
+
 //Return TspSolution, may have to call a cost-calc function inside here
 TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
 {
     vector<int> copiedSequence = tspSol.sequence;
-    int segmentMaxLength = dimension / 10; //TODO: Might have to ceil() this with double casting, check it
+    int segmentMaxLength = ceil(dimension / 10.0);
     TspSolution disturbedSol;
 
     //Will mark the index of first and last elements of each subsequence
@@ -462,12 +467,18 @@ TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
     //Length of each subsequence and of the space among them
     int subseq2Length, inbetweenSubseqsLength; //subseq2Length uneeded
 
-    subseq1Index_begin = 2 + rand() % ((dimension - segmentMaxLength - 1) - 2 + 1);
-    subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 1);
+    //subseq1Index_begin = 2 + rand() % ((dimension - segmentMaxLength - 1) - 2 + 1);
+    subseq1Index_begin = BoundedRand(1, dimension - segmentMaxLength - segmentMaxLength - 1);
 
-    subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 1); //Arithmetic Exception
-    subseq2Index_end = (subseq2Index_begin + 1) + rand() % ((subseq2Index_begin + segmentMaxLength - 1) - (subseq2Index_begin + 1) + 1);
+    //subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 2); //TODO: Arithmetic Exception (Only happens in the 5-city (low) TSP, so it might be that)
+    subseq1Index_end = BoundedRand(subseq1Index_begin + 1, subseq1Index_begin + segmentMaxLength - 1);
+
+    //subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 2); //Arithmetic Exception may happen here as well, prob same reason
+    subseq2Index_begin = BoundedRand(subseq1Index_end + 1, dimension - segmentMaxLength);
     
+    //subseq2Index_end = (subseq2Index_begin + 1) + rand() % ((subseq2Index_begin + segmentMaxLength - 1) - (subseq2Index_begin + 1) + 1);
+    subseq2Index_end = BoundedRand(subseq2Index_begin + 1, subseq2Index_begin + segmentMaxLength - 1);
+
     //Actually making the subsequences from rand calc'd indexes
     vector<int> subseq1(copiedSequence.begin() + subseq1Index_begin, copiedSequence.begin() + subseq1Index_end);
     vector<int> subseq2(copiedSequence.begin() + subseq2Index_begin, copiedSequence.begin() + subseq2Index_end);
@@ -571,6 +582,7 @@ int main(int argc, char** argv)
         cout << tspSol.sequence[i] << " -> ";
     }
 
+    cout << "1\n";
     cout << "\nCusto de S: " << tspSol.cost << '\n';
 
     return 0;
