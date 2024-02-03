@@ -36,7 +36,7 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
     int l = 0;
     int i, j;
 
-    //Iterating among all nodes in the solution sequence, going edge-by-edge (df 2 nodes on each edge)
+    //Iterating among all nodes in the solution sequence, going edge-by-edge through curr solution (pair of 2 nodes on each edge)
     for(int node1 = 0, node2 = 1; node1 < (int)tspSol.sequence.size() - 1; node1++, node2++){
         i = tspSol.sequence[node1];
         j = tspSol.sequence[node2];
@@ -185,7 +185,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     TspSolution tspSol;
     vector<int> addedNodes;
     tspSol.sequence = Choose3RandNodes(dimension, addedNodes);   //gets s
-    vector<int> unaddedNodes = GetUnchosenNodes(dimension, addedNodes);   //gets CL //Leaving five in a dimension 5 graph
+    vector<int> unaddedNodes = GetUnchosenNodes(dimension, addedNodes);   //gets CL
 
     //Calculating cost for the initial solution
     tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
@@ -195,7 +195,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 
         SortAscendingByCost(insertionCost);
 
-        double alpha = (double)rand() / RAND_MAX;
+        double alpha = ((double)rand() + 1) / RAND_MAX; //rand() + 1 so that alpha can't be zero, which throws an Arithmetic exception on next line
         int selected = rand() % ((int)ceil(alpha * insertionCost.size()));
         InsertIntoSolution(tspSol, insertionCost[selected]);
 
@@ -286,7 +286,7 @@ bool BestImprovement2Opt(TspSolution* tspSol, double** m, int dimension)
 bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int movedBlockSize)
 {
     double bestDelta = 0;
-    double initialDelta, currDelta;
+    double initialDelta, currDelta = 0; //currDelta = 0; TODO: change to this to fix first iter trash mem
     int best_i = 0, best_j = 0;
 
     //Reinsertion Case
@@ -299,7 +299,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
             for(int j = 1; j < dimension - 1; j++){
                 if(i != j){
                     if(i < j){
-                        currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] //Segfault here
+                        currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]]
                                                  + m[tspSol->sequence[i]][tspSol->sequence[j]] 
                                                  + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
                     }else{
@@ -309,7 +309,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
                     }
                 }
 
-                if(currDelta < bestDelta){
+                if(currDelta < bestDelta){  //First iter currDelta is still trash mem here
                     bestDelta = currDelta;
                     best_i = i;
                     best_j = j;
@@ -449,6 +449,14 @@ void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)
 
 int BoundedRand(int min, int max)
 {
+    //If too small, rand() % 0 will throw an Arithmetic Exception
+    //But this shouldn't happen in usual instances (only happened on custom debug instance)
+    //if(min > max){
+    //    int tmp = min;
+    //    min = max;
+    //    max = tmp;
+    //}
+
     return min + rand() % (max - min + 1);
 }
 
@@ -470,7 +478,7 @@ TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
     //subseq1Index_begin = 2 + rand() % ((dimension - segmentMaxLength - 1) - 2 + 1);
     subseq1Index_begin = BoundedRand(1, dimension - segmentMaxLength - segmentMaxLength - 1);
 
-    //subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 2); //TODO: Arithmetic Exception (Only happens in the 5-city (low) TSP, so it might be that)
+    //subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 2); //Arithmetic Exception (Only happens in the 5-city (low) TSP, so it might be that)
     subseq1Index_end = BoundedRand(subseq1Index_begin + 1, subseq1Index_begin + segmentMaxLength - 1);
 
     //subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 2); //Arithmetic Exception may happen here as well, prob same reason
@@ -551,8 +559,9 @@ int main(int argc, char** argv)
     size_t n = data.getDimension();
 
     cout << "Dimension: " << n << endl;
-    cout << "DistanceMatrix: " << endl;
+    //cout << "DistanceMatrix: " << endl;
     data.printMatrixDist();
+    cout << "Wait for it...\n";
 
     //Defining Iters
     if(data.getDimension() >= 150){
@@ -565,7 +574,7 @@ int main(int argc, char** argv)
 
     cout << "----------------------\n";
     //cout << "Exemplo de Solucao s = ";
-    cout << "Solução s = ";
+    cout << "Solution s = ";
 
     //double cost = 0.0;
 

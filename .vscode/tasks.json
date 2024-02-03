@@ -76,31 +76,6 @@
 				"isDefault": false
 			},
 			"detail": "compilador: C:\\msys64\\mingw64\\bin\\g++.exe"
-		},
-		{
-			"type": "cppbuild",
-			"label": "C/C++: g++.exe arquivo de build ativo (Procedural)",
-			"command": "C:\\msys64\\mingw64\\bin\\g++.exe",
-			"args": [
-				"-fdiagnostics-color=always",
-				"-g",
-				"-Wall",
-				"-Wextra",
-				"${file}",
-				"-o",
-				"${fileBasenameNoExtension}.exe"
-			],
-			"options": {
-				"cwd": "${fileDirname}"
-			},
-			"problemMatcher": [
-				"$gcc"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": false
-			},
-			"detail": "compilador: C:\\msys64\\mingw64\\bin\\g++.exe"
 		}
 	]
 }
