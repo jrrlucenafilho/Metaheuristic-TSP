@@ -60,14 +60,6 @@ void DeleteMatrix(int rows, double** matrix)
 
 int BoundedRand(int min, int max)
 {
-    //If too small, rand() % 0 will throw an Arithmetic Exception
-    //But this shouldn't happen in usual instances (only happened on custom debug instance)
-    //if(min > max){
-    //    int tmp = min;
-    //    min = max;
-    //    max = tmp;
-    //}
-
     return min + rand() % (max - min + 1);
 }
 
@@ -75,7 +67,7 @@ double CalculateSequenceCost(vector<int>& sequence, double** m)
 {
     double cost = 0;
 
-    for(int i = 0, j = 1; i < (int)sequence.size() - 1; i++, j++){  //Segfault here, accessing array out of bounds
+    for(int i = 0, j = 1; i < (int)sequence.size() - 1; i++, j++){
         cost += m[sequence[i]][sequence[j]];
     }
 
@@ -140,10 +132,23 @@ int main(void)
 
     distMatrix = CreateMatrix(14, 14, distMatrix);
 
-    tspSol.sequence = {1, 14, 5, 4, 8, 7, 13, 6, 12, 3, 10, 2, 11, 9, 1};
+    tspSol.sequence = {1, 5, 4, 8, 7, 13, 6, 12, 3, 10, 2, 11, 9, 1};
     tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
 
     disturbedSol = Disturbance(tspSol, distMatrix, 14);
+
+    //Print both sequences
+    cout << "Original sequence: ";
+    for(int i = 0; i < (int)tspSol.sequence.size(); i++)
+        cout << tspSol.sequence[i] << " ";
+    
+    cout << "\nCost: " << tspSol.cost << '\n';
+
+    cout << "Disturbed sequence: ";
+    for(int i = 0; i < (int)disturbedSol.sequence.size(); i++)
+        cout << disturbedSol.sequence[i] << " ";
+
+    cout << "\nCost: " << disturbedSol.cost << '\n';
 
     DeleteMatrix(14, distMatrix);
 
