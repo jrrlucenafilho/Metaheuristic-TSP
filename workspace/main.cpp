@@ -43,7 +43,8 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
 
         //For each node/vertex
         for(int k : unaddedVertices){
-            insertionCost[l].cost = distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j];
+                                  //distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j]; (before) TODO (changed)
+            insertionCost[l].cost = distMatrix[i][k] + distMatrix[i][j] - distMatrix[i][j];
             insertionCost[l].insertedNode = k;
             insertionCost[l].removedGraphEdge = node1;
             l++;
@@ -129,8 +130,8 @@ vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
     return unaddedNodes;
 }
 
-//Sorting the costs
-bool CompareByCost(InsertionInfo& prevInsertionInfo, InsertionInfo& currInsertionInfo)
+//Cost sorting funcs
+bool CompareByCost(InsertionInfo prevInsertionInfo, InsertionInfo currInsertionInfo)
 {
     return prevInsertionInfo.cost < currInsertionInfo.cost;
 }
@@ -286,7 +287,7 @@ bool BestImprovement2Opt(TspSolution* tspSol, double** m, int dimension)
 bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int movedBlockSize)
 {
     double bestDelta = 0;
-    double initialDelta, currDelta = 0; //currDelta = 0; TODO: change to this to fix first iter trash mem
+    double initialDelta, currDelta = 0;
     int best_i = 0, best_j = 0;
 
     //Reinsertion Case
@@ -309,7 +310,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
                     }
                 }
 
-                if(currDelta < bestDelta){  //First iter currDelta is still trash mem here
+                if(currDelta < bestDelta){
                     bestDelta = currDelta;
                     best_i = i;
                     best_j = j;
@@ -559,13 +560,13 @@ int main(int argc, char** argv)
     size_t n = data.getDimension();
 
     cout << "Dimension: " << n << endl;
-    //cout << "DistanceMatrix: " << endl;
+    cout << "DistanceMatrix: " << endl;
     data.printMatrixDist();
     cout << "Wait for it...\n";
 
     //Defining Iters
     if(data.getDimension() >= 150){
-        maxIterILS = data.getDimension() / 2;
+        maxIterILS = data.getDimension() / 2.0;
     }else{
         maxIterILS = data.getDimension();
     }
@@ -573,19 +574,7 @@ int main(int argc, char** argv)
     tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
 
     cout << "----------------------\n";
-    //cout << "Exemplo de Solucao s = ";
     cout << "Solution s = ";
-
-    //double cost = 0.0;
-
-    //for(size_t i = 1; i < n; i++){
-    //    cout << i << " -> ";
-    //    cost += data.getDistance(i, i+1);
-    //}
-
-    //cost += data.getDistance(n, 1);
-
-    //cout << n << " -> " << 1 << endl;
 
     for(size_t i = 0; i < tspSol.sequence.size() - 1; i++){
         cout << tspSol.sequence[i] << " -> ";
