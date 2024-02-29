@@ -483,3 +483,33 @@ void Data::printMatrixDist(){
 		cout << endl;
 	}
 }
+
+//Reformat the matrix to include an additional row and column, for testing
+void Data::reformatMatrix()
+{
+    //Create a new matrix with one additional row and column
+    double **newMatrix = new double *[dimension + 1];
+    for (int i = 0; i < dimension + 1; i++){
+        newMatrix[i] = new double[dimension + 1];
+    }
+
+    //Fill the new matrix with the shifted values from the old matrix
+    for (int i = 0; i < dimension + 1; i++){
+        for (int j = 0; j < dimension + 1; j++){
+            if (i == 0 || j == 0){
+                newMatrix[i][j] = INFINITE; //Fill the first row and column with zeroes
+            } else {
+                newMatrix[i][j] = distMatrix[i-1][j-1]; //Shift the values from the old matrix
+            }
+        }
+    }
+
+    //Delete the old matrix
+    for (int i = 0; i < dimension; i++){
+        delete [] distMatrix[i];
+    }
+    delete [] distMatrix;
+
+    //Replace the old matrix with the new one
+    distMatrix = newMatrix;
+}

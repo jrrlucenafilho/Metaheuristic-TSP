@@ -1,5 +1,7 @@
 #Ignored filetypes
 *.exe
-
+Data_back.txt
+Data_back.txt
+reformatMatrix.cpp
 #Ignored folders
 /resources

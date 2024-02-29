@@ -22,6 +22,7 @@ public:
 	inline double getXCoord(int i){return xCoord[i-1];}
 	inline double getYCoord(int i){return yCoord[i-1];}
 	inline bool getExplicitCoord(){return explicitCoord; };
+	void reformatMatrix();
 
 	string getInstanceName();                    //Get instance's name
 

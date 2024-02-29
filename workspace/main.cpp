@@ -44,6 +44,7 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
         //For each node/vertex
         for(int k : unaddedVertices){
                                   //distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j]; CHANGED (before)
+                                  //distMatrix[i][k] + distMatrix[i][j] - distMatrix[i][j]; (after)
             insertionCost[l].cost = distMatrix[i][k] + distMatrix[i][j] - distMatrix[i][j];
             insertionCost[l].insertedNode = k;
             insertionCost[l].removedGraphEdge = node1;
@@ -112,7 +113,7 @@ vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
     bool nodeFound;
 
     //Iterates through s from 2 to numOfNodes (distMatrix is 1-indexed and 1 will always be in the solution)
-    for(int i = 2; i <= dimension - 1; i++){    //Changed to "dimension - 1" due to out-of-bound segfault
+    for(int i = 2; i <= dimension; i++){    //Changed to "dimension - 1" due to out-of-bound segfault //chg back to dimension
         //Checks if current array element is any of the 3 in solAddedNodes
         for(int j = 0; j < (int)solAddedNodes.size(); j++){
             //Checks if this node was added to solSequence, immediately breaking out of the 3-check loop if it's found
@@ -220,7 +221,7 @@ bool BestImprovementSwap(TspSolution& tspSol, double** m, int dimension)
     int graphSize = dimension + 1;
 
     for(int i = 1; i < graphSize - 1; i++){
-        for(int j = i + 1; j < graphSize - 1; j++){ //My sol vec goes from [0] up to [13], should go up to [14]
+        for(int j = i + 1; j < graphSize - 1; j++){
             toBeRemovedSection = -(m[tspSol.sequence[i]][tspSol.sequence[i + 1]] + m[tspSol.sequence[i]][tspSol.sequence[i - 1]] 
                                  + m[tspSol.sequence[j]][tspSol.sequence[j + 1]] + m[tspSol.sequence[j]][tspSol.sequence[j - 1]]);
         
@@ -560,7 +561,7 @@ int main(int argc, char** argv)
     TspSolution tspSol;
 
     data.read();
-
+    data.reformatMatrix();
     size_t n = data.getDimension();
 
     cout << "Dimension: " << n << endl;
