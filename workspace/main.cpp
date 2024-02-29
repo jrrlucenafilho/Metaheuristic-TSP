@@ -43,7 +43,7 @@ vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& un
 
         //For each node/vertex
         for(int k : unaddedVertices){
-                                  //distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j]; (before) TODO (changed)
+                                  //distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j]; CHANGED (before)
             insertionCost[l].cost = distMatrix[i][k] + distMatrix[i][j] - distMatrix[i][j];
             insertionCost[l].insertedNode = k;
             insertionCost[l].removedGraphEdge = node1;
@@ -210,26 +210,27 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 //Tries to get the best swap possible in the solution
 //As in the one that best minimizes the solution's cost
 //"m" here means distMatrix
-bool BestImprovementSwap(TspSolution* tspSol, double** m, int dimension)
+bool BestImprovementSwap(TspSolution& tspSol, double** m, int dimension)
 {
     //"Delta" as in the overall solution's cost
     double bestDelta = 0;
     double currDelta;
     double toBeRemovedSection;
     int best_i = 0, best_j = 0;
+    int graphSize = dimension + 1;
 
-    for(int i = 1; i < dimension - 1; i++){
-        for(int j = i + 1; j < dimension - 1; j++){
-            toBeRemovedSection = -(m[tspSol->sequence[i]][tspSol->sequence[i + 1]] + m[tspSol->sequence[i]][tspSol->sequence[i - 1]] 
-                                 + m[tspSol->sequence[j]][tspSol->sequence[j + 1]] + m[tspSol->sequence[j]][tspSol->sequence[j - 1]]);
+    for(int i = 1; i < graphSize - 1; i++){
+        for(int j = i + 1; j < graphSize - 1; j++){ //My sol vec goes from [0] up to [13], should go up to [14]
+            toBeRemovedSection = -(m[tspSol.sequence[i]][tspSol.sequence[i + 1]] + m[tspSol.sequence[i]][tspSol.sequence[i - 1]] 
+                                 + m[tspSol.sequence[j]][tspSol.sequence[j + 1]] + m[tspSol.sequence[j]][tspSol.sequence[j - 1]]);
         
             //In case of neighboring nodes
             if(j == i + 1){
-                currDelta = - m[tspSol->sequence[i - 1]][tspSol->sequence[i]] - m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
-                            + m[tspSol->sequence[i - 1]][tspSol->sequence[j]] + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
+                currDelta = - m[tspSol.sequence[i - 1]][tspSol.sequence[i]] - m[tspSol.sequence[j]][tspSol.sequence[j + 1]] 
+                            + m[tspSol.sequence[i - 1]][tspSol.sequence[j]] + m[tspSol.sequence[i]][tspSol.sequence[j + 1]];
             }else{
-                currDelta = toBeRemovedSection + m[tspSol->sequence[i]][tspSol->sequence[j + 1]] + m[tspSol->sequence[i]][tspSol->sequence[j - 1]] 
-                            + m[tspSol->sequence[j]][tspSol->sequence[i + 1]] + m[tspSol->sequence[j]][tspSol->sequence[i - 1]];
+                currDelta = toBeRemovedSection + m[tspSol.sequence[i]][tspSol.sequence[j + 1]] + m[tspSol.sequence[i]][tspSol.sequence[j - 1]] 
+                            + m[tspSol.sequence[j]][tspSol.sequence[i + 1]] + m[tspSol.sequence[j]][tspSol.sequence[i - 1]];
             }
 
             if(currDelta < bestDelta){
@@ -242,8 +243,8 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m, int dimension)
 
     //Actual swap, only happens when overall solution cost lowers
     if(bestDelta < 0){
-        swap(tspSol->sequence[best_i], tspSol->sequence[best_j]);
-        tspSol->cost = tspSol->cost + bestDelta;
+        swap(tspSol.sequence[best_i], tspSol.sequence[best_j]);
+        tspSol.cost = tspSol.cost + bestDelta;
         return true;
     }
 
@@ -251,19 +252,20 @@ bool BestImprovementSwap(TspSolution* tspSol, double** m, int dimension)
 }
 
 //2-Opt (TOTEST)
-bool BestImprovement2Opt(TspSolution* tspSol, double** m, int dimension)
+bool BestImprovement2Opt(TspSolution& tspSol, double** m, int dimension)
 {
     double bestDelta = 0;
     double initialDelta, currDelta;
     int best_i = 0, best_j = 0;
+    int graphSize = dimension + 1;
 
-    for(int i = 1; i < dimension - 1; i++){
-        initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]];
+    for(int i = 1; i < graphSize - 1; i++){
+        initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]];
 
-        for(int j = i + 1; j < dimension - 1; j++){
-            currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]] 
-                                     + m[tspSol->sequence[i - 1]][tspSol->sequence[j]] 
-                                     + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
+        for(int j = i + 1; j < graphSize - 1; j++){
+            currDelta = initialDelta -m[tspSol.sequence[j]][tspSol.sequence[j + 1]] 
+                                     + m[tspSol.sequence[i - 1]][tspSol.sequence[j]] 
+                                     + m[tspSol.sequence[i]][tspSol.sequence[j + 1]];
 
             if(currDelta < bestDelta){
                 bestDelta = currDelta;
@@ -275,8 +277,8 @@ bool BestImprovement2Opt(TspSolution* tspSol, double** m, int dimension)
 
     //Actual swap
     if(bestDelta < 0){
-        reverse(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_j + 1);
-        tspSol->cost = tspSol->cost + bestDelta;
+        reverse(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_j + 1);
+        tspSol.cost = tspSol.cost + bestDelta;
         return true;
     }
 
@@ -284,36 +286,37 @@ bool BestImprovement2Opt(TspSolution* tspSol, double** m, int dimension)
 }
 
 //OrOpt (TOTEST)
-bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int movedBlockSize)
+bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int movedBlockSize)
 {
     double bestDelta = 0;
     double initialDelta, currDelta = 0;
     int best_i = 0, best_j = 0;
+    int graphSize = dimension + 1;
 
     //Reinsertion Case
     if(movedBlockSize == 1){
-        for(int i = 1; i < dimension - 1; i++){
-            initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]] 
-                           - m[tspSol->sequence[i]][tspSol->sequence[i + 1]] 
-                           + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 1]];
+        for(int i = 1; i < graphSize - 1; i++){
+            initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]] 
+                           - m[tspSol.sequence[i]][tspSol.sequence[i + 1]] 
+                           + m[tspSol.sequence[i - 1]][tspSol.sequence[i + 1]];
         
-            for(int j = 1; j < dimension - 1; j++){
+            for(int j = 1; j < graphSize - 1; j++){
                 if(i != j){
                     if(i < j){
-                        currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j + 1]]
-                                                 + m[tspSol->sequence[i]][tspSol->sequence[j]] 
-                                                 + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
+                        currDelta = initialDelta -m[tspSol.sequence[j]][tspSol.sequence[j + 1]]
+                                                 + m[tspSol.sequence[i]][tspSol.sequence[j]] 
+                                                 + m[tspSol.sequence[i]][tspSol.sequence[j + 1]];
                     }else{
-                        currDelta = initialDelta -m[tspSol->sequence[j]][tspSol->sequence[j - 1]] 
-                                                 + m[tspSol->sequence[i]][tspSol->sequence[j]] 
-                                                 + m[tspSol->sequence[j - 1]][tspSol->sequence[i]];
+                        currDelta = initialDelta -m[tspSol.sequence[j]][tspSol.sequence[j - 1]] 
+                                                 + m[tspSol.sequence[i]][tspSol.sequence[j]] 
+                                                 + m[tspSol.sequence[j - 1]][tspSol.sequence[i]];
                     }
-                }
 
-                if(currDelta < bestDelta){
-                    bestDelta = currDelta;
-                    best_i = i;
-                    best_j = j;
+                    if(currDelta < bestDelta){  //Changed this into the (i != j) if statement
+                        bestDelta = currDelta;
+                        best_i = i;
+                        best_j = j;
+                    }
                 }
             }
         }
@@ -321,21 +324,21 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
 
     //OrOpt-2 case
     if(movedBlockSize == 2){
-        for(int i = 1; i < dimension - 2; i++){
-            initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]]
-                           - m[tspSol->sequence[i + 1]][tspSol->sequence[i + 2]] 
-                           + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 2]];
+        for(int i = 1; i < graphSize - 2; i++){
+            initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]]
+                           - m[tspSol.sequence[i + 1]][tspSol.sequence[i + 2]] 
+                           + m[tspSol.sequence[i - 1]][tspSol.sequence[i + 2]];
 
-            for(int j = 1; j < dimension - 3; j++){
+            for(int j = 1; j < graphSize - 3; j++){
                 if(i != j){
                     if(i < j){
-                        currDelta = initialDelta -m[tspSol->sequence[j + 1]][tspSol->sequence[j + 2]] 
-                                                 + m[tspSol->sequence[i + 1]][tspSol->sequence[j + 2]] 
-                                                 + m[tspSol->sequence[i]][tspSol->sequence[j + 1]];
+                        currDelta = initialDelta -m[tspSol.sequence[j + 1]][tspSol.sequence[j + 2]] 
+                                                 + m[tspSol.sequence[i + 1]][tspSol.sequence[j + 2]] 
+                                                 + m[tspSol.sequence[i]][tspSol.sequence[j + 1]];
                     }else{
-                        currDelta = initialDelta -m[tspSol->sequence[j - 1]][tspSol->sequence[j]] 
-                                                 + m[tspSol->sequence[j - 1]][tspSol->sequence[i]] 
-                                                 + m[tspSol->sequence[i + 1]][tspSol->sequence[j]];
+                        currDelta = initialDelta -m[tspSol.sequence[j - 1]][tspSol.sequence[j]] 
+                                                 + m[tspSol.sequence[j - 1]][tspSol.sequence[i]] 
+                                                 + m[tspSol.sequence[i + 1]][tspSol.sequence[j]];
                     }
 
                     if(currDelta < bestDelta){
@@ -350,28 +353,28 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
 
     //OrOpt-3 case
     if(movedBlockSize == 3){
-        for(int i = 1; i < dimension - 3; i++){
-            initialDelta = -m[tspSol->sequence[i - 1]][tspSol->sequence[i]]
-                           - m[tspSol->sequence[i + 2]][tspSol->sequence[i + 3]] 
-                           + m[tspSol->sequence[i - 1]][tspSol->sequence[i + 3]];
+        for(int i = 1; i < graphSize - 3; i++){
+            initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]]
+                           - m[tspSol.sequence[i + 2]][tspSol.sequence[i + 3]] 
+                           + m[tspSol.sequence[i - 1]][tspSol.sequence[i + 3]];
     
-            for(int j = 1; j < dimension - 4; j++){
+            for(int j = 1; j < graphSize - 4; j++){
                 if(i != j){
                     if(i < j){
-                        currDelta = initialDelta -m[tspSol->sequence[j + 2]][tspSol->sequence[j + 3]] 
-                                                 + m[tspSol->sequence[i]][tspSol->sequence[j + 2]]
-                                                 + m[tspSol->sequence[i + 2]][tspSol->sequence[j + 3]];
+                        currDelta = initialDelta -m[tspSol.sequence[j + 2]][tspSol.sequence[j + 3]] 
+                                                 + m[tspSol.sequence[i]][tspSol.sequence[j + 2]]
+                                                 + m[tspSol.sequence[i + 2]][tspSol.sequence[j + 3]];
                     }else{
-                        currDelta = initialDelta -m[tspSol->sequence[j - 1]][tspSol->sequence[j]] 
-                                                 + m[tspSol->sequence[j - 1]][tspSol->sequence[i]] 
-                                                 + m[tspSol->sequence[i + 2]][tspSol->sequence[j]];
+                        currDelta = initialDelta -m[tspSol.sequence[j - 1]][tspSol.sequence[j]] 
+                                                 + m[tspSol.sequence[j - 1]][tspSol.sequence[i]] 
+                                                 + m[tspSol.sequence[i + 2]][tspSol.sequence[j]];
                     }
-                }
 
-                if(currDelta < bestDelta){
-                    bestDelta = currDelta;
-                    best_i = i;
-                    best_j = j;
+                    if(currDelta < bestDelta){
+                        bestDelta = currDelta;
+                        best_i = i;
+                        best_j = j;
+                    }
                 }
             }
         }
@@ -380,26 +383,26 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
     if(bestDelta < 0){
         //Reinsertion Case
         if(movedBlockSize == 1){
-            int reinsertedNode = tspSol->sequence[best_i];
-            tspSol->sequence.erase(tspSol->sequence.begin() + best_i);
-            tspSol->sequence.insert(tspSol->sequence.begin() + best_j, reinsertedNode);
+            int reinsertedNode = tspSol.sequence[best_i];
+            tspSol.sequence.erase(tspSol.sequence.begin() + best_i);
+            tspSol.sequence.insert(tspSol.sequence.begin() + best_j, reinsertedNode);
         }
 
         //OrOpt-2 case
         if(movedBlockSize == 2){
-            vector<int> reinsertSequence(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 2);
-            tspSol->sequence.erase(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 2);
-            tspSol->sequence.insert(tspSol->sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
+            vector<int> reinsertSequence(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 2);
+            tspSol.sequence.erase(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 2);
+            tspSol.sequence.insert(tspSol.sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
         }
 
         //OrOpt-3 case
         if(movedBlockSize == 3){
-            vector<int> reinsertSequence(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 3);
-            tspSol->sequence.erase(tspSol->sequence.begin() + best_i, tspSol->sequence.begin() + best_i + 3);
-            tspSol->sequence.insert(tspSol->sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
+            vector<int> reinsertSequence(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 3);
+            tspSol.sequence.erase(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 3);
+            tspSol.sequence.insert(tspSol.sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
         }
 
-        tspSol->cost += bestDelta;
+        tspSol.cost += bestDelta;
         
         return true;
     }
@@ -412,7 +415,7 @@ bool BestImprovementOrOpt(TspSolution* tspSol, double** m, int dimension, int mo
 //Using the Random Variable Neighborhood Descent method
 //Which just tests different neighborhood structures with a tad of randomness when choosing
 //discarding whichever makes cost higher than currCost
-void LocalSearch(TspSolution* tspSol, double** distMatrix, int dimension)
+void LocalSearch(TspSolution& tspSol, double** distMatrix, int dimension)
 {
     vector<int> NH_structures = {1, 2, 3, 4, 5};
     bool solutionImproved = false;
@@ -527,7 +530,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
         while(iterILS <= maxIterILS){
             //Tries to enhance the fair-guessed solution
             //By doing small modifications to it
-            LocalSearch(&currIterSolution, data.getMatrixCost(), data.getDimension());
+            LocalSearch(currIterSolution, data.getMatrixCost(), data.getDimension());
 
             if(currIterSolution.cost < currBestSolution.cost){
                 currBestSolution = currIterSolution;
@@ -586,7 +589,7 @@ int main(int argc, char** argv)
     }
 
     cout << "1\n";
-    cout << "\nCost of s: " << tspSol.cost << '\n';
+    cout << "\nCost of s (last iter): " << tspSol.cost << '\n';
     cout << "Average cost: " << costsSum / 10 << '\n';
 
     return 0;
