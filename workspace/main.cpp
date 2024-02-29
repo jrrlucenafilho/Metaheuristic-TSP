@@ -552,6 +552,7 @@ int main(int argc, char** argv)
 {
     int maxIter = 50;
     int maxIterILS;
+    double costsSum = 0;
     auto data = Data(argc, argv[1]);
     TspSolution tspSol;
 
@@ -560,8 +561,8 @@ int main(int argc, char** argv)
     size_t n = data.getDimension();
 
     cout << "Dimension: " << n << endl;
-    cout << "DistanceMatrix: " << endl;
-    data.printMatrixDist();
+    //cout << "DistanceMatrix: " << endl;
+    //data.printMatrixDist();
     cout << "Wait for it...\n";
 
     //Defining Iters
@@ -571,7 +572,11 @@ int main(int argc, char** argv)
         maxIterILS = data.getDimension();
     }
 
-    tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
+    //10 execs for the sum avg calc
+    for(int i = 0; i < 10; i++){ 
+        tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
+        costsSum += tspSol.cost;
+    }
 
     cout << "----------------------\n";
     cout << "Solution s = ";
@@ -581,7 +586,8 @@ int main(int argc, char** argv)
     }
 
     cout << "1\n";
-    cout << "\nCusto de S: " << tspSol.cost << '\n';
+    cout << "\nCost of s: " << tspSol.cost << '\n';
+    cout << "Average cost: " << costsSum / 10 << '\n';
 
     return 0;
 }
