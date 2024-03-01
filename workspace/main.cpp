@@ -110,10 +110,10 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
 vector<int> GetUnchosenNodes(int dimension, vector<int>& solAddedNodes)
 {
     vector<int> unaddedNodes;
-    bool nodeFound;
+    bool nodeFound = false;
 
     //Iterates through s from 2 to numOfNodes (distMatrix is 1-indexed and 1 will always be in the solution)
-    for(int i = 2; i <= dimension; i++){    //Changed to "dimension - 1" due to out-of-bound segfault //chg back to dimension
+    for(int i = 2; i <= dimension; i++){
         //Checks if current array element is any of the 3 in solAddedNodes
         for(int j = 0; j < (int)solAddedNodes.size(); j++){
             //Checks if this node was added to solSequence, immediately breaking out of the 3-check loop if it's found
@@ -454,14 +454,6 @@ void LocalSearch(TspSolution& tspSol, double** distMatrix, int dimension)
 
 int BoundedRand(int min, int max)
 {
-    //If too small, rand() % 0 will throw an Arithmetic Exception
-    //But this shouldn't happen in usual instances (only happened on custom debug instance)
-    //if(min > max){
-    //    int tmp = min;
-    //    min = max;
-    //    max = tmp;
-    //}
-
     return min + rand() % (max - min + 1);
 }
 
@@ -480,16 +472,9 @@ TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
     //Length of each subsequence and of the space among them
     int subseq2Length, inbetweenSubseqsLength; //subseq2Length uneeded
 
-    //subseq1Index_begin = 2 + rand() % ((dimension - segmentMaxLength - 1) - 2 + 1);
     subseq1Index_begin = BoundedRand(1, dimension - segmentMaxLength - segmentMaxLength - 1);
-
-    //subseq1Index_end = (subseq1Index_begin + 1) + rand() % ((subseq1Index_begin + segmentMaxLength - 1) - (subseq1Index_begin + 1) + 2); //Arithmetic Exception (Only happens in the 5-city (low) TSP, so it might be that)
     subseq1Index_end = BoundedRand(subseq1Index_begin + 1, subseq1Index_begin + segmentMaxLength - 1);
-
-    //subseq2Index_begin = (subseq1Index_end + 1) + rand() % ((dimension - segmentMaxLength) - (subseq1Index_end + 1) + 2); //Arithmetic Exception may happen here as well, prob same reason
     subseq2Index_begin = BoundedRand(subseq1Index_end + 1, dimension - segmentMaxLength);
-    
-    //subseq2Index_end = (subseq2Index_begin + 1) + rand() % ((subseq2Index_begin + segmentMaxLength - 1) - (subseq2Index_begin + 1) + 1);
     subseq2Index_end = BoundedRand(subseq2Index_begin + 1, subseq2Index_begin + segmentMaxLength - 1);
 
     //Actually making the subsequences from rand calc'd indexes
@@ -579,6 +564,7 @@ int main(int argc, char** argv)
     //10 execs for the sum avg calc
     for(int i = 0; i < 10; i++){ 
         tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
+        tspSol.cost = CalculateSequenceCost(tspSol.sequence, data.getMatrixCost());
         costsSum += tspSol.cost;
     }
 
@@ -591,7 +577,7 @@ int main(int argc, char** argv)
 
     cout << "1\n";
     cout << "\nCost of s (last iter): " << tspSol.cost << '\n';
-    cout << "Average cost: " << costsSum / 10 << '\n';
+    cout << "Average cost: " << (costsSum / 10) << '\n';
 
     return 0;
 }

@@ -476,8 +476,8 @@ string Data::getInstanceName()
 }
 
 void Data::printMatrixDist(){
-	for (int i  = 1; i <= getDimension(); i++){
-		for (int j = 1; j <= getDimension(); j++){
+	for (int i  = 2; i <= getDimension()+1; i++){
+		for (int j = 2; j <= getDimension()+1; j++){
 			cout << getDistance(i,j) << " ";
 		}
 		cout << endl;
