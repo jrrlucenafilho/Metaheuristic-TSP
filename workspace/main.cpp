@@ -28,24 +28,21 @@ struct InsertionInfo {
  * @param unaddedVertices Vertices / Nodes that still don't belong to the solution subtour
  * @param distMatrix Matrix holding distances among graph nodes
  * @return insertionCost Cost of inserting nodes into TSP Solution graph
- */
+ **/
 vector<InsertionInfo> CalcNodeInsertionCost(TspSolution& tspSol, vector<int>& unaddedVertices, double** distMatrix)
 {
-    //Specifies size of vec
     vector<InsertionInfo> insertionCost = vector<InsertionInfo>((tspSol.sequence.size() - 1) * unaddedVertices.size());
     int l = 0;
     int i, j;
 
     //Iterating among all nodes in the solution sequence, going edge-by-edge through curr solution (pair of 2 nodes on each edge)
-    for(int node1 = 0, node2 = 1; node1 < (int)tspSol.sequence.size() - 1; node1++, node2++){
+    for(int node1 = 0; node1 < (int)tspSol.sequence.size() - 1; node1++){
         i = tspSol.sequence[node1];
-        j = tspSol.sequence[node2];
+        j = tspSol.sequence[node1 + 1];
 
         //For each node/vertex
         for(int k : unaddedVertices){
-                                  //distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j]; CHANGED (before)
-                                  //distMatrix[i][k] + distMatrix[i][j] - distMatrix[i][j]; (after)
-            insertionCost[l].cost = distMatrix[i][k] + distMatrix[i][j] - distMatrix[i][j];
+            insertionCost[l].cost = distMatrix[i][k] + distMatrix[j][k] - distMatrix[i][j];
             insertionCost[l].insertedNode = k;
             insertionCost[l].removedGraphEdge = node1;
             l++;
@@ -81,9 +78,9 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
         }
 
         //Handles if chosen randNode ends up being equals to dimension (out of bounds by 1)
-        if(randNode == dimension){
-            randNode = dimension - 1;
-        }
+        //if(randNode == dimension){
+        //    randNode = dimension - 1;
+        //}
 
         //Checks if this node has already been added to starterSeq
         for(int i = 0; i < (int)solAddedNodes.size(); i++){
@@ -514,7 +511,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
         int iterILS = 0;
 
         while(iterILS <= maxIterILS){
-            //Tries to enhance the fair-guessed solution
+            //Tries to enhance the fairly-guessed solution
             //By doing small modifications to it
             LocalSearch(currIterSolution, data.getMatrixCost(), data.getDimension());
 
@@ -523,7 +520,7 @@ TspSolution IteratedLocalSearch(int maxIters, int maxIterILS, Data& data)
                 iterILS = 0;
             }
 
-            //If not possible to make it better, shake the current best solution up a lil
+            //If not possible to make it better, shake the current best solution up a lil'
             //to see if we didn't just go into a 'local best pitfall'
             currIterSolution = Disturbance(currBestSolution, data.getMatrixCost(), data.getDimension());
             iterILS++;
@@ -549,8 +546,8 @@ int main(int argc, char** argv)
     data.reformatMatrix();
     size_t n = data.getDimension();
 
-    cout << "Dimension: " << n << endl;
-    //cout << "DistanceMatrix: " << endl;
+    cout << "Dimension: " << n << '\n';
+    //cout << "DistanceMatrix: " << '\n';
     //data.printMatrixDist();
     cout << "Wait for it...\n";
 
