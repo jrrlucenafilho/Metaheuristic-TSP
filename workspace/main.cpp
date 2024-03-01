@@ -61,7 +61,7 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
     int randNode = 0;
     bool nodeAlreadyAddedFlag = false;
 
-    srand(static_cast<unsigned int>(time(0)));
+    srand(static_cast<unsigned int>(time(0))); //TODO: CHANGE this, diference in ms as seed may be interferring with final result
 
     starterSeq.reserve(5);  //{1, x, y, z, 1}
     starterSeq.push_back(1);
@@ -76,11 +76,6 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
         if((randNode == 0) || (randNode == 1)){
             randNode = 2;
         }
-
-        //Handles if chosen randNode ends up being equals to dimension (out of bounds by 1)
-        //if(randNode == dimension){
-        //    randNode = dimension - 1;
-        //}
 
         //Checks if this node has already been added to starterSeq
         for(int i = 0; i < (int)solAddedNodes.size(); i++){
@@ -141,15 +136,9 @@ void SortAscendingByCost(vector<InsertionInfo>& insertionInfo)
 
 //Inserts a node into the tsp solution
 //And sums the current tspSol cost with the inserted node's own
-void InsertIntoSolution(TspSolution& tspSol, InsertionInfo& nodeInsertionInfo)
+void InsertIntoSolution(TspSolution& tspSol, InsertionInfo& nodeInsertionInfo) //TODO: Check changes from here
 {
-    //First adds up the cost of the to-be-added node
-    tspSol.cost += nodeInsertionInfo.cost;
-
-    //Adds the node into the tspSol sequence
-    tspSol.sequence.pop_back();
-    tspSol.sequence.push_back(nodeInsertionInfo.insertedNode);
-    tspSol.sequence.push_back(1);
+    tspSol.sequence.insert(tspSol.sequence.begin() + nodeInsertionInfo.removedGraphEdge + 1, nodeInsertionInfo.insertedNode);
 }
 
 //Removes selected node
@@ -190,7 +179,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
 
     while(!unaddedNodes.empty()){
-        vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
+        vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);  //TEST: Put this outta the loop (and at the end) (prob the same thing)
 
         SortAscendingByCost(insertionCost);
 
@@ -200,6 +189,8 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 
         RemoveFromUnaddedNodes(unaddedNodes, insertionCost[selected].insertedNode);
     }
+
+    tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
 
     return tspSol;
 }
@@ -249,7 +240,6 @@ bool BestImprovementSwap(TspSolution& tspSol, double** m, int dimension)
     return false;
 }
 
-//2-Opt (TOTEST)
 bool BestImprovement2Opt(TspSolution& tspSol, double** m, int dimension)
 {
     double bestDelta = 0;
@@ -283,7 +273,6 @@ bool BestImprovement2Opt(TspSolution& tspSol, double** m, int dimension)
     return false;
 }
 
-//OrOpt (TOTEST)
 bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int movedBlockSize)
 {
     double bestDelta = 0;
@@ -310,7 +299,7 @@ bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int mo
                                                  + m[tspSol.sequence[j - 1]][tspSol.sequence[i]];
                     }
 
-                    if(currDelta < bestDelta){  //Changed this into the (i != j) if statement
+                    if(currDelta < bestDelta){
                         bestDelta = currDelta;
                         best_i = i;
                         best_j = j;
@@ -563,18 +552,18 @@ int main(int argc, char** argv)
         tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
         tspSol.cost = CalculateSequenceCost(tspSol.sequence, data.getMatrixCost());
         costsSum += tspSol.cost;
+
+        cout << "Cost of s (iter " << i + 1 << "): " << tspSol.cost << '\n';
     }
 
-    cout << "----------------------\n";
+    cout << "-------------------------------\n";
     cout << "Solution s = ";
 
     for(size_t i = 0; i < tspSol.sequence.size() - 1; i++){
         cout << tspSol.sequence[i] << " -> ";
     }
-
     cout << "1\n";
-    cout << "\nCost of s (last iter): " << tspSol.cost << '\n';
-    cout << "Average cost: " << (costsSum / 10) << '\n';
+    cout << "Average s cost: " << (costsSum / 10) << '\n';
 
     return 0;
 }

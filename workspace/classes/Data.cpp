@@ -36,8 +36,7 @@ Data::~Data(){
 }
 
 void Data::read(){
-	//Edited "instanceName" here
-	ifstream inTSP("instances\\" + instaceName + ".tsp", ios::in);
+	ifstream inTSP(instaceName, ios::in);
 
 	if ( !inTSP ){
 		cout << "File not found" << endl;
