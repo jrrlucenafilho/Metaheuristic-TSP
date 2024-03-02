@@ -61,8 +61,6 @@ vector<int> Choose3RandNodes(int dimension, vector<int>& solAddedNodes)
     int randNode = 0;
     bool nodeAlreadyAddedFlag = false;
 
-    srand(static_cast<unsigned int>(time(0))); //TODO: CHANGE this, diference in ms as seed may be interferring with final result
-
     starterSeq.reserve(5);  //{1, x, y, z, 1}
     starterSeq.push_back(1);
 
@@ -136,7 +134,7 @@ void SortAscendingByCost(vector<InsertionInfo>& insertionInfo)
 
 //Inserts a node into the tsp solution
 //And sums the current tspSol cost with the inserted node's own
-void InsertIntoSolution(TspSolution& tspSol, InsertionInfo& nodeInsertionInfo) //TODO: Check changes from here
+void InsertIntoSolution(TspSolution& tspSol, InsertionInfo& nodeInsertionInfo)
 {
     tspSol.sequence.insert(tspSol.sequence.begin() + nodeInsertionInfo.removedGraphEdge + 1, nodeInsertionInfo.insertedNode);
 }
@@ -548,8 +546,11 @@ int main(int argc, char** argv)
     }
 
     //10 execs for the sum avg calc
-    for(int i = 0; i < 10; i++){ 
+    for(int i = 0; i < 10; i++){
+        srand(static_cast<unsigned int>(time(0)));
+
         tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
+
         tspSol.cost = CalculateSequenceCost(tspSol.sequence, data.getMatrixCost());
         costsSum += tspSol.cost;
 
