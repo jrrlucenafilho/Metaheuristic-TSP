@@ -1,0 +1,34 @@
+a280 - 2579             kroA150 - 
+ali535 - 202456         kroA200 - 
+att48 - 10628           kroB100 - 
+att532 -                kroB150 - 
+bayg29 - 1610           kroB200 - 
+bays29 - 2020           kroC100 - 
+berlin52 - 7542         kroD100 - 
+bier127 - 118282        kroE100 - 
+brazil58 - 25395        lin105 - 
+brg180 - 1950           lin318 - 
+burma14 - 3323          linhp318 - 
+ch130 - 6110            pcb442 - 
+ch150 - 6528            pr107 - 
+d198 - 15780.1          pr124 - 
+d493 -                  pr136 - 
+dantzig42 - 699         pr144 - 
+eil101 - 629            pr152 - 
+eil51 - 426             pr226 - 
+eil76 - 538             pr264 - 
+fl417 -                 pr299 - 
+fri26 - 937             pr76 - 
+gil262 - 2378.8         rat195 - 
+gr120 - 6942            rat99 - 
+gr137 - 69853           rd100 - 
+gr17 - 2085             rd400 - 
+gr202 - 40160.1         si175 - 
+gr21 - 2707             si535 - 
+gr229 -                 st70 - 
+gr24 - 1272             swiss42 - 
+gr431 -                 ts225 - 
+gr48 - 5046             tsp225 - 
+gr96 - 55209            u159 - 
+hk48 - 11461            ulysses16 - 
+kroA100 - 21282         ulysses22 - 
