@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <ctime>
 
 using namespace std;
 
@@ -20,6 +21,36 @@ struct InsertionInfo {
     //Cost of inserting this new node into the graph, among tho other nodes
     double cost;
 };
+
+typedef struct {
+    clock_t accumulatedTime = 0;
+    clock_t beginTime = 0;
+    clock_t endTime = 0;
+} my_time_t;
+
+//Timers, they'll hold the sum of time in clock cycles over all iterations (for avg calc)
+my_time_t buildSol_time, bestImprovSwap_time, orOpt_time, orOpt2_time, orOpt3_time, two_opt_time, disturbance_time;
+
+my_time_t* buildSol_time_ptr = &buildSol_time; 
+my_time_t* bestImprovSwap_time_ptr = &bestImprovSwap_time;
+my_time_t* orOpt_time_ptr = &orOpt_time;
+my_time_t* orOpt2_time_ptr = &orOpt2_time;
+my_time_t* orOpt3_time_ptr = &orOpt3_time;
+my_time_t* two_opt_time_ptr = &two_opt_time;
+my_time_t* disturbance_time_ptr = &disturbance_time;
+
+
+//Prints the time for each Neighborhood Structure
+void PrintNBSTimers()
+{
+    cout << "\tBuildSolution time: " << buildSol_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+    cout << "\tBestImprovementSwap time: " << bestImprovSwap_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+    cout << "\tOrOpt time: " << orOpt_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+    cout << "\tOrOpt2 time: " << orOpt2_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+    cout << "\tOrOpt3 time: " << orOpt3_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+    cout << "\t2-Opt time: " << two_opt_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+    cout << "\tDisturbance time: " << disturbance_time_ptr->accumulatedTime / static_cast<double>(CLOCKS_PER_SEC) << " s\n";
+}
 
 //BuildSolution Utility funcs
 /**
@@ -168,6 +199,8 @@ double CalculateSequenceCost(vector<int>& sequence, double** m)
  */
 TspSolution BuildSolution(double** distMatrix, int dimension)
 {
+    buildSol_time_ptr->beginTime = std::clock();
+
     TspSolution tspSol;
     vector<int> addedNodes;
     tspSol.sequence = Choose3RandNodes(dimension, addedNodes);   //gets s
@@ -190,6 +223,9 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 
     tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
 
+    buildSol_time_ptr->endTime = std::clock();
+    buildSol_time_ptr->accumulatedTime += buildSol_time_ptr->endTime - buildSol_time_ptr->beginTime;
+
     return tspSol;
 }
 
@@ -199,6 +235,8 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
 //"m" here means distMatrix
 bool BestImprovementSwap(TspSolution& tspSol, double** m, int dimension)
 {
+    bestImprovSwap_time_ptr->beginTime = std::clock();
+
     //"Delta" as in the overall solution's cost
     double bestDelta = 0;
     double currDelta;
@@ -233,13 +271,21 @@ bool BestImprovementSwap(TspSolution& tspSol, double** m, int dimension)
         swap(tspSol.sequence[best_i], tspSol.sequence[best_j]);
         tspSol.cost = tspSol.cost + bestDelta;
         return true;
+
+        bestImprovSwap_time_ptr->endTime = std::clock();
+        bestImprovSwap_time_ptr->accumulatedTime += bestImprovSwap_time_ptr->endTime - bestImprovSwap_time_ptr->beginTime;
     }
+
+    bestImprovSwap_time_ptr->endTime = std::clock();
+    bestImprovSwap_time_ptr->accumulatedTime += bestImprovSwap_time_ptr->endTime - bestImprovSwap_time_ptr->beginTime;
 
     return false;
 }
 
 bool BestImprovement2Opt(TspSolution& tspSol, double** m, int dimension)
 {
+    two_opt_time_ptr->beginTime = std::clock();
+
     double bestDelta = 0;
     double initialDelta, currDelta;
     int best_i = 0, best_j = 0;
@@ -265,21 +311,37 @@ bool BestImprovement2Opt(TspSolution& tspSol, double** m, int dimension)
     if(bestDelta < 0){
         reverse(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_j + 1);
         tspSol.cost = tspSol.cost + bestDelta;
+
+        two_opt_time_ptr->endTime = std::clock();
+        two_opt_time_ptr->accumulatedTime += two_opt_time_ptr->endTime - two_opt_time_ptr->beginTime;
+
         return true;
     }
+
+    two_opt_time_ptr->endTime = std::clock();
+    two_opt_time_ptr->accumulatedTime += two_opt_time_ptr->endTime - two_opt_time_ptr->beginTime;
 
     return false;
 }
 
 bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int movedBlockSize)
 {
+    //Just to account for var creation time, prob quite smallish
+    my_time_t var_creation_time;
+    var_creation_time.beginTime = std::clock();
+
     double bestDelta = 0;
     double initialDelta, currDelta = 0;
     int best_i = 0, best_j = 0;
     int graphSize = dimension + 1;
 
+    var_creation_time.endTime = std::clock();
+    var_creation_time.accumulatedTime += var_creation_time.endTime - var_creation_time.beginTime;
+
     //Reinsertion Case
     if(movedBlockSize == 1){
+        orOpt_time_ptr->beginTime = std::clock();
+
         for(int i = 1; i < graphSize - 1; i++){
             initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]] 
                            - m[tspSol.sequence[i]][tspSol.sequence[i + 1]] 
@@ -305,10 +367,15 @@ bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int mo
                 }
             }
         }
+
+        orOpt_time_ptr->endTime = std::clock();
+        orOpt_time_ptr->accumulatedTime += orOpt_time_ptr->endTime - orOpt_time_ptr->beginTime;
     }
 
     //OrOpt-2 case
     if(movedBlockSize == 2){
+        orOpt2_time_ptr->beginTime = std::clock();
+
         for(int i = 1; i < graphSize - 2; i++){
             initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]]
                            - m[tspSol.sequence[i + 1]][tspSol.sequence[i + 2]] 
@@ -334,10 +401,15 @@ bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int mo
                 }
             }
         }
+
+        orOpt2_time_ptr->endTime = std::clock();
+        orOpt2_time_ptr->accumulatedTime += orOpt2_time_ptr->endTime - orOpt2_time_ptr->beginTime;
     }
 
     //OrOpt-3 case
     if(movedBlockSize == 3){
+        orOpt3_time_ptr->beginTime = std::clock();
+
         for(int i = 1; i < graphSize - 3; i++){
             initialDelta = -m[tspSol.sequence[i - 1]][tspSol.sequence[i]]
                            - m[tspSol.sequence[i + 2]][tspSol.sequence[i + 3]] 
@@ -363,31 +435,56 @@ bool BestImprovementOrOpt(TspSolution& tspSol, double** m, int dimension, int mo
                 }
             }
         }
+
+        orOpt3_time_ptr->endTime = std::clock();
+        orOpt3_time_ptr->accumulatedTime += orOpt3_time_ptr->endTime - orOpt3_time_ptr->beginTime;
     }
 
     if(bestDelta < 0){
         //Reinsertion Case
         if(movedBlockSize == 1){
+            orOpt_time_ptr->beginTime = std::clock();
+
             int reinsertedNode = tspSol.sequence[best_i];
             tspSol.sequence.erase(tspSol.sequence.begin() + best_i);
             tspSol.sequence.insert(tspSol.sequence.begin() + best_j, reinsertedNode);
+
+            tspSol.cost += bestDelta;
+
+            orOpt_time_ptr->endTime = std::clock();
+            orOpt_time_ptr->accumulatedTime += orOpt_time_ptr->endTime - orOpt_time_ptr->beginTime;
+            orOpt_time_ptr->accumulatedTime += var_creation_time.accumulatedTime;
         }
 
         //OrOpt-2 case
         if(movedBlockSize == 2){
+            orOpt2_time_ptr->beginTime = std::clock();
+
             vector<int> reinsertSequence(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 2);
             tspSol.sequence.erase(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 2);
             tspSol.sequence.insert(tspSol.sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
+
+            tspSol.cost += bestDelta;
+
+            orOpt2_time_ptr->endTime = std::clock();
+            orOpt2_time_ptr->accumulatedTime += orOpt2_time_ptr->endTime - orOpt2_time_ptr->beginTime;
+            orOpt2_time_ptr->accumulatedTime += var_creation_time.accumulatedTime;
         }
 
         //OrOpt-3 case
         if(movedBlockSize == 3){
+            orOpt3_time_ptr->beginTime = std::clock();
+
             vector<int> reinsertSequence(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 3);
             tspSol.sequence.erase(tspSol.sequence.begin() + best_i, tspSol.sequence.begin() + best_i + 3);
             tspSol.sequence.insert(tspSol.sequence.begin() + best_j, reinsertSequence.begin(), reinsertSequence.end());
-        }
 
-        tspSol.cost += bestDelta;
+            tspSol.cost += bestDelta;
+
+            orOpt3_time_ptr->endTime = std::clock();
+            orOpt3_time_ptr->accumulatedTime += orOpt3_time_ptr->endTime - orOpt3_time_ptr->beginTime;
+            orOpt3_time_ptr->accumulatedTime += var_creation_time.accumulatedTime;
+        }
         
         return true;
     }
@@ -444,6 +541,8 @@ int BoundedRand(int min, int max)
 //Return TspSolution, may have to call a cost-calc function inside here
 TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
 {
+    disturbance_time_ptr->beginTime = std::clock();
+
     vector<int> copiedSequence = tspSol.sequence;
     int segmentMaxLength = ceil(dimension / 10.0);
     TspSolution disturbedSol;
@@ -481,6 +580,9 @@ TspSolution Disturbance(TspSolution& tspSol, double** m, int dimension)
     //Calculating cost and attributing to disturbed solution
     disturbedSol.cost = CalculateSequenceCost(copiedSequence, m);
     disturbedSol.sequence = copiedSequence;
+
+    disturbance_time_ptr->endTime = std::clock();
+    disturbance_time_ptr->accumulatedTime += disturbance_time_ptr->endTime - disturbance_time_ptr->beginTime;
 
     return disturbedSol;
 }
@@ -528,6 +630,7 @@ int main(int argc, char** argv)
     double costsSum = 0;
     auto data = Data(argc, argv[1]);
     TspSolution tspSol;
+    my_time_t ILS_iter_time;
 
     data.read();
     data.reformatMatrix();
@@ -545,26 +648,39 @@ int main(int argc, char** argv)
         maxIterILS = data.getDimension();
     }
 
+    cout << "-------------------------------\n";
+    cout << "10 Iteration costs:\n";
+
     //10 execs for the sum avg calc
     for(int i = 0; i < 10; i++){
         srand(static_cast<unsigned int>(time(0)));
+
+        ILS_iter_time.beginTime = std::clock();
 
         tspSol = IteratedLocalSearch(maxIter, maxIterILS, data);
 
         tspSol.cost = CalculateSequenceCost(tspSol.sequence, data.getMatrixCost());
         costsSum += tspSol.cost;
 
+        ILS_iter_time.endTime = std::clock();
+        ILS_iter_time.accumulatedTime += ILS_iter_time.endTime - ILS_iter_time.beginTime;
+
         cout << "Cost of s (iter " << i + 1 << "): " << tspSol.cost << '\n';
     }
 
     cout << "-------------------------------\n";
+    cout << "Instance Name: " << data.getInstanceName() << '\n';
     cout << "Solution s = ";
 
     for(size_t i = 0; i < tspSol.sequence.size() - 1; i++){
         cout << tspSol.sequence[i] << " -> ";
     }
     cout << "1\n";
-    cout << "Average s cost: " << (costsSum / 10) << '\n';
+    cout << "Average s cost: " << costsSum / 10 << '\n';
+    cout << "Average CPU execution time: " << (ILS_iter_time.accumulatedTime / static_cast<double>(CLOCKS_PER_SEC)) / 10 << " s \n";
+    cout << "-------------------------------\n";
+    cout << "Average Times on each Neighborhood Structure:\n";
+    PrintNBSTimers();
 
     return 0;
 }
