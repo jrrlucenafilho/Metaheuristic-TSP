@@ -2,7 +2,7 @@
 $instanceNames = Get-Content -Path "instance_names.txt"
 
 # Create a new CSV file for output
-$outputFilePath = "output.csv"
+$outputFilePath = "output_benchmark.csv"
 "Instance,AvgCost,AvgTime,BuildSolution,BestImprovementSwap,OrOpt,OrOpt2,OrOpt3,2-Opt,Disturbance" | Out-File -FilePath $outputFilePath -Encoding ASCII
 
 # Iterate through each instance name

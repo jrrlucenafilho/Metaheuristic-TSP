@@ -37,8 +37,6 @@
 				"classes/*.cpp",
 				"-I",
 				"headers",
-				//"-I",
-				//"C:/msys64/usr/include",
 				"-o",
 				"${fileBasenameNoExtension}.exe"
 			],

@@ -5,39 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch_tsp_test_instance",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
-            "args": [
-                "myTestInst"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:\\msys64\\mingw64\\bin\\gdb.exe",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
             "name": "(gdb) Launch_tsp_burma14",
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
             "args": [
-                "burma14"
+                "instances\\burma14.tsp"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -64,7 +37,7 @@
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
             "args": [
-                "a280"
+                "instances\\a280.tsp"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -91,7 +64,7 @@
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
             "args": [
-                "berlin52"
+                "instances\\berlin52.tsp"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -118,7 +91,7 @@
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
             "args": [
-                "gr24"
+                "instances\\gr24.tsp"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
