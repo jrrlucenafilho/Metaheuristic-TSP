@@ -210,7 +210,7 @@ TspSolution BuildSolution(double** distMatrix, int dimension)
     tspSol.cost = CalculateSequenceCost(tspSol.sequence, distMatrix);
 
     while(!unaddedNodes.empty()){
-        vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);  //TEST: Put this outta the loop (and at the end) (prob the same thing)
+        vector<InsertionInfo> insertionCost = CalcNodeInsertionCost(tspSol, unaddedNodes, distMatrix);
 
         SortAscendingByCost(insertionCost);
 
