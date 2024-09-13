@@ -66,7 +66,7 @@ void Data::read(){
 	// Alocar matriz 2D
 	distMatrix = new double *[ dimension ]; //memoria dinâmica (matrix 2D)
 
-	for ( int i = 0; i < dimension; i++ ) {	// THIS THROWS bad_alloc() on mona-lisa100K.tsp
+	for ( int i = 0; i < dimension; i++ ) {	// TODO: THIS throws bad_alloc() on mona-lisa100K.tsp 
 		distMatrix[i] = new double [ dimension ];
 	}
 
