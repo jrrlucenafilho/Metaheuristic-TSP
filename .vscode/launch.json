@@ -113,6 +113,36 @@
             ]
         },
         {
+            "name": "gdb_launch_mona-lisa100K",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",    //utf-8
+            "args": [
+                "instances\\mona-lisa100K.tsp"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "miDebuggerPath": "C:\\msys64\\mingw64\\bin\\gdb.exe",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Habilitar a reformatação automática para gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "text": "set charset UTF-8"
+                },
+                {
+                    "description":  "Definir Tipo de Desmontagem como Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "gdb Launch",
             "type": "cppdbg",
             "request": "launch",
