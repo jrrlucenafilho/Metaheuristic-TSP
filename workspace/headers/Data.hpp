@@ -33,7 +33,7 @@ private:
 
 	int dimension;
 
-	double **distMatrix;
+	double **distMatrix;	// Check bad_alloc() reasoning. If i can hold 100k i'd better know it before?!! (cant run monalisa100k)
 	double *xCoord, *yCoord;
 
 	//Computing Distances
