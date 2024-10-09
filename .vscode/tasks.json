@@ -54,6 +54,35 @@
 		},
 		{
 			"type": "cppbuild",
+			"label": "C/C++: g++.exe arquivo de build ativo (OOP) -O3",
+			"command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+			"args": [
+				"-fdiagnostics-color=always",
+				"-g",
+				"-O3",
+				"-Wall",
+				"-Wextra",
+				"${file}",
+				"classes/*.cpp",
+				"-I",
+				"headers",
+				"-o",
+				"${fileBasenameNoExtension}.exe"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compilador: C:\\msys64\\mingw64\\bin\\g++.exe"
+		},
+		{
+			"type": "cppbuild",
 			"label": "C/C++: g++.exe arquivo de build ativo (Procedural)",
 			"command": "C:\\msys64\\mingw64\\bin\\g++.exe",
 			"args": [
